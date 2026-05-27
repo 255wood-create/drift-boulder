@@ -92,20 +92,20 @@ const tcol=t=>({Now:{bg:"#FEE9E0",color:T.ember},Tonight:{bg:T.skyLt,color:T.sky
 
 // ── Atoms ───────────────────────────────────────────────────────
 function LivePip(){return(<span style={{position:"relative",display:"inline-flex",width:8,height:8,flexShrink:0}}><span style={{position:"absolute",inset:0,borderRadius:"50%",background:T.ember,opacity:0.35,animation:"pipPing 1.6s cubic-bezier(0,0,.2,1) infinite"}}/><span style={{position:"relative",width:8,height:8,borderRadius:"50%",background:T.ember}}/></span>);}
-function TimeBadge({time}){const s=tcol(time);return(<span style={{display:"inline-flex",alignItems:"center",gap:5,background:s.bg,color:s.color,borderRadius:20,padding:"3px 9px",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:600,letterSpacing:"0.05em",textTransform:"uppercase"}}>{time==="Now"&&<LivePip/>}{time}</span>);}
+function TimeBadge({time}){const s=tcol(time);return(<span style={{display:"inline-flex",alignItems:"center",gap:5,background:s.bg,color:s.color,borderRadius:2,padding:"3px 9px",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:600,letterSpacing:"0.05em",textTransform:"uppercase"}}>{time==="Now"&&<LivePip/>}{time}</span>);}
 function SaveBtn({saved,onToggle}){return(<button onClick={e=>{e.stopPropagation();onToggle();}} style={{width:34,height:34,display:"flex",alignItems:"center",justifyContent:"center",background:saved?T.emberXlt:T.sandMid,border:`1.5px solid ${saved?T.emberLt:T.sandDark}`,borderRadius:"50%",cursor:"pointer",fontSize:14,transition:"all .18s",flexShrink:0}}>🔖</button>);}
 
 // ── Geo Banner ──────────────────────────────────────────────────
 function GeoBanner({geoState,onRequest}){
   if(geoState==="granted"||geoState==="loading")return null;
   return(
-    <div style={{margin:"0 0 12px",background:T.white,border:`1.5px solid ${T.sandDark}`,borderRadius:14,padding:"11px 14px",display:"flex",alignItems:"center",gap:10,boxShadow:`0 1px 6px ${T.shadow}`}}>
+    <div style={{margin:"0 0 12px",background:T.white,border:`1.5px solid ${T.sandDark}`,borderRadius:2,padding:"11px 14px",display:"flex",alignItems:"center",gap:10,boxShadow:`0 1px 6px ${T.shadow}`}}>
       <span style={{fontSize:20,flexShrink:0}}>📍</span>
       <div style={{flex:1}}>
-        <div style={{fontFamily:"'Nunito',sans-serif",fontSize:13,fontWeight:700,color:T.ink}}>{geoState==="denied"?"Location access denied":"See real distances from you"}</div>
-        <div style={{fontFamily:"'Nunito',sans-serif",fontSize:11,color:T.stone,marginTop:1}}>{geoState==="denied"?"Update browser settings to allow location":"Events sort by how close they are"}</div>
+        <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700,color:T.ink}}>{geoState==="denied"?"Location access denied":"See real distances from you"}</div>
+        <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:T.stone,marginTop:1}}>{geoState==="denied"?"Update browser settings to allow location":"Events sort by how close they are"}</div>
       </div>
-      {geoState!=="denied"&&<button onClick={onRequest} style={{background:T.ink,color:T.white,border:"none",borderRadius:10,padding:"7px 13px",fontFamily:"'Nunito',sans-serif",fontSize:12,fontWeight:700,cursor:"pointer",flexShrink:0}}>Allow</button>}
+      {geoState!=="denied"&&<button onClick={onRequest} style={{background:T.ink,color:T.white,border:"none",borderRadius:2,padding:"7px 13px",fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:700,cursor:"pointer",flexShrink:0}}>Allow</button>}
     </div>
   );
 }
@@ -114,7 +114,7 @@ function GeoBanner({geoState,onRequest}){
 function EventCard({event,saved,interested,onSave,onInterest,index,distMiles}){
   const meta=CAT_META[event.cat];
   return(
-    <div style={{background:T.white,borderRadius:16,boxShadow:`0 1px 6px ${T.shadow}`,animation:`cardUp .35s ease both`,animationDelay:`${index*45}ms`,cursor:"pointer",display:"flex",alignItems:"center",overflow:"hidden",transition:"box-shadow .15s"}}
+    <div style={{background:T.white,borderRadius:2,boxShadow:`0 1px 6px ${T.shadow}`,animation:`cardUp .35s ease both`,animationDelay:`${index*45}ms`,cursor:"pointer",display:"flex",alignItems:"center",overflow:"hidden",transition:"box-shadow .15s"}}
       onMouseEnter={e=>e.currentTarget.style.boxShadow=`0 4px 18px ${T.shadowMd}`}
       onMouseLeave={e=>e.currentTarget.style.boxShadow=`0 1px 6px ${T.shadow}`}>
       <div style={{width:60,flexShrink:0,background:event.gradient,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,alignSelf:"stretch"}}>{event.emoji}</div>
@@ -124,16 +124,16 @@ function EventCard({event,saved,interested,onSave,onInterest,index,distMiles}){
           <TimeBadge time={event.time}/>
           {event.is_trending&&<span style={{background:T.goldLt,color:T.gold,borderRadius:4,padding:"1px 6px",fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:600}}>↑ Trending</span>}
         </div>
-        <h3 style={{fontFamily:"'Fraunces',Georgia,serif",fontSize:15,fontWeight:700,lineHeight:1.3,color:T.ink,margin:"0 0 3px",letterSpacing:"-0.015em",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{event.title}</h3>
-        <p style={{fontFamily:"'Nunito',sans-serif",fontSize:12,color:T.inkMute,margin:"0 0 2px",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>📍 {event.location}</p>
+        <h3 style={{fontFamily:"'DM Sans',sans-serif",fontSize:15,fontWeight:700,lineHeight:1.3,color:T.ink,margin:"0 0 3px",letterSpacing:"-0.015em",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{event.title}</h3>
+        <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:T.inkMute,margin:"0 0 2px",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>📍 {event.location}</p>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          {event.vibe&&<p style={{fontFamily:"'Nunito',sans-serif",fontSize:11,color:T.stone,margin:0,fontStyle:"italic",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",flex:1}}>{event.vibe}</p>}
+          {event.vibe&&<p style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:T.stone,margin:0,fontStyle:"italic",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",flex:1}}>{event.vibe}</p>}
           <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:distMiles!=null?T.ember:T.stone,fontWeight:distMiles!=null?600:400,flexShrink:0}}>{fmt(distMiles)}</span>
         </div>
       </div>
       <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:7,padding:"11px 13px 11px 4px",flexShrink:0}}>
         <SaveBtn saved={saved} onToggle={onSave}/>
-        <button onClick={e=>{e.stopPropagation();onInterest();}} style={{background:interested?T.emberXlt:T.sandMid,color:interested?T.ember:T.stone,border:`1.5px solid ${interested?T.emberLt:T.sandDark}`,borderRadius:20,padding:"4px 9px",fontFamily:"'Nunito',sans-serif",fontSize:11,fontWeight:700,cursor:"pointer",transition:"all .18s",whiteSpace:"nowrap"}}>
+        <button onClick={e=>{e.stopPropagation();onInterest();}} style={{background:interested?T.emberXlt:T.sandMid,color:interested?T.ember:T.stone,border:`1.5px solid ${interested?T.emberLt:T.sandDark}`,borderRadius:2,padding:"4px 9px",fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:700,cursor:"pointer",transition:"all .18s",whiteSpace:"nowrap"}}>
           {interested?"✦ Yes!":"✦ Going?"}
         </button>
       </div>
@@ -162,15 +162,15 @@ function MapView({events,saved,interested,onSave,onInterest,userLat,userLng}){
           <ellipse cx="320" cy="200" rx="40" ry="30" fill="#A8C890" opacity="0.45"/>
         </svg>
         {userXY&&(<div style={{position:"absolute",left:`${userXY.x}%`,top:`${userXY.y}%`,transform:"translate(-50%,-50%)",zIndex:20}}><div style={{width:16,height:16,borderRadius:"50%",background:T.sky,border:"3px solid white",boxShadow:`0 0 0 4px ${T.sky}44`}}/></div>)}
-        <div style={{position:"absolute",top:16,left:16,background:"rgba(255,255,255,0.92)",backdropFilter:"blur(12px)",borderRadius:12,padding:"8px 14px",boxShadow:`0 2px 12px ${T.shadow}`}}>
-          <div style={{fontFamily:"'Fraunces',serif",fontSize:14,fontWeight:700,color:T.ink}}>Boulder, CO</div>
+        <div style={{position:"absolute",top:16,left:16,background:"rgba(255,255,255,0.92)",backdropFilter:"blur(12px)",borderRadius:2,padding:"8px 14px",boxShadow:`0 2px 12px ${T.shadow}`}}>
+          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:700,color:T.ink}}>Boulder, CO</div>
           <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:T.stone,marginTop:1}}>{userLat!=null?"📍 Using your location":`${events.length} events`}</div>
         </div>
         {events.map(evt=>{
           const{x,y}=toXY(evt.lat,evt.lng);
           const meta=CAT_META[evt.cat];const isSel=selected===evt.id;
           return(<button key={evt.id} onClick={()=>setSelected(isSel?null:evt.id)} style={{position:"absolute",left:`${x}%`,top:`${y}%`,transform:`translate(-50%,-100%) scale(${isSel?1.15:1})`,background:"none",border:"none",cursor:"pointer",transition:"transform .2s",zIndex:isSel?10:5}}>
-            <div style={{background:isSel?meta.color:T.white,color:isSel?T.white:meta.color,borderRadius:20,padding:isSel?"5px 10px":"4px 9px",fontFamily:"'Nunito',sans-serif",fontSize:11,fontWeight:800,boxShadow:isSel?`0 4px 16px ${meta.color}55`:`0 2px 8px ${T.shadow}`,border:`2px solid ${meta.color}`,display:"flex",alignItems:"center",gap:4,whiteSpace:"nowrap"}}>
+            <div style={{background:isSel?meta.color:T.white,color:isSel?T.white:meta.color,borderRadius:2,padding:isSel?"5px 10px":"4px 9px",fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:800,boxShadow:isSel?`0 4px 16px ${meta.color}55`:`0 2px 8px ${T.shadow}`,border:`2px solid ${meta.color}`,display:"flex",alignItems:"center",gap:4,whiteSpace:"nowrap"}}>
               <span style={{fontSize:12}}>{evt.emoji}</span>{isSel&&evt.title.split(" ").slice(0,3).join(" ")}
             </div>
             <div style={{width:0,height:0,borderLeft:"5px solid transparent",borderRight:"5px solid transparent",borderTop:`7px solid ${isSel?meta.color:T.white}`,margin:"0 auto"}}/>
@@ -183,9 +183,9 @@ function MapView({events,saved,interested,onSave,onInterest,userLat,userLng}){
           <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
             <span style={{fontSize:32}}>{sel.emoji}</span>
             <div style={{flex:1}}>
-              <h3 style={{fontFamily:"'Fraunces',serif",fontSize:16,fontWeight:700,color:T.ink,margin:"0 0 4px"}}>{sel.title}</h3>
-              <p style={{fontFamily:"'Nunito',sans-serif",fontSize:13,color:T.inkMute,margin:"0 0 3px"}}>📍 {sel.location}</p>
-              {sel.vibe&&<p style={{fontFamily:"'Nunito',sans-serif",fontSize:12,color:T.stone,fontStyle:"italic",margin:0}}>{sel.vibe}</p>}
+              <h3 style={{fontFamily:"'DM Sans',sans-serif",fontSize:16,fontWeight:700,color:T.ink,margin:"0 0 4px"}}>{sel.title}</h3>
+              <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:T.inkMute,margin:"0 0 3px"}}>📍 {sel.location}</p>
+              {sel.vibe&&<p style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:T.stone,fontStyle:"italic",margin:0}}>{sel.vibe}</p>}
             </div>
             <SaveBtn saved={saved.has(sel.id)} onToggle={()=>onSave(sel.id)}/>
           </div>
@@ -194,7 +194,7 @@ function MapView({events,saved,interested,onSave,onInterest,userLat,userLng}){
               <TimeBadge time={sel.time}/>
               {sel.distMiles!=null&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:T.ember,fontWeight:600}}>{fmt(sel.distMiles)} away</span>}
             </div>
-            <button onClick={()=>onInterest(sel.id)} style={{background:interested.has(sel.id)?T.emberXlt:T.sandMid,color:interested.has(sel.id)?T.ember:T.stone,border:`1.5px solid ${interested.has(sel.id)?T.emberLt:T.sandDark}`,borderRadius:20,padding:"6px 14px",fontFamily:"'Nunito',sans-serif",fontSize:12,fontWeight:700,cursor:"pointer"}}>
+            <button onClick={()=>onInterest(sel.id)} style={{background:interested.has(sel.id)?T.emberXlt:T.sandMid,color:interested.has(sel.id)?T.ember:T.stone,border:`1.5px solid ${interested.has(sel.id)?T.emberLt:T.sandDark}`,borderRadius:2,padding:"6px 14px",fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:700,cursor:"pointer"}}>
               {interested.has(sel.id)?"✦ Interested":"✦ I'm interested"}
             </button>
           </div>
@@ -209,13 +209,13 @@ function SavedView({events,saved,interested,onSave,onInterest,userCoords}){
   const sv=events.filter(e=>saved.has(e.id));
   return(
     <div style={{flex:1,overflowY:"auto",padding:"24px 16px 100px"}}>
-      <h2 style={{fontFamily:"'Fraunces',serif",fontSize:24,fontWeight:700,color:T.ink,margin:"0 0 4px"}}>Saved</h2>
-      <p style={{fontFamily:"'Nunito',sans-serif",fontSize:14,color:T.inkMute,margin:"0 0 20px"}}>{sv.length} {sv.length===1?"event":"events"} bookmarked</p>
+      <h2 style={{fontFamily:"'DM Sans',sans-serif",fontSize:24,fontWeight:700,color:T.ink,margin:"0 0 4px"}}>Saved</h2>
+      <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,color:T.inkMute,margin:"0 0 20px"}}>{sv.length} {sv.length===1?"event":"events"} bookmarked</p>
       {sv.length===0?(
         <div style={{textAlign:"center",padding:"60px 20px"}}>
           <div style={{fontSize:48,marginBottom:16}}>🔖</div>
-          <p style={{fontFamily:"'Fraunces',serif",fontSize:18,color:T.inkMute}}>Nothing saved yet</p>
-          <p style={{fontFamily:"'Nunito',sans-serif",fontSize:14,color:T.stone,marginTop:6}}>Tap 🔖 on any event</p>
+          <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:18,color:T.inkMute}}>Nothing saved yet</p>
+          <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,color:T.stone,marginTop:6}}>Tap 🔖 on any event</p>
         </div>
       ):(
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -237,20 +237,20 @@ function ProfileView({saved,events,userCoords,geoState}){
     <div style={{flex:1,overflowY:"auto",padding:"0 0 100px"}}>
       <div style={{background:`linear-gradient(160deg,${T.ember} 0%,#7A3010 100%)`,padding:"40px 20px 28px",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",top:-40,right:-40,width:180,height:180,borderRadius:"50%",background:"rgba(255,255,255,0.06)"}}/>
-        <div style={{width:72,height:72,borderRadius:"50%",background:"rgba(255,255,255,0.2)",border:"3px solid rgba(255,255,255,0.5)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Fraunces',serif",fontSize:26,fontWeight:700,color:T.white,marginBottom:14}}>{USER.avatar}</div>
-        <h2 style={{fontFamily:"'Fraunces',serif",fontSize:22,fontWeight:700,color:T.white,margin:"0 0 2px"}}>{USER.name}</h2>
+        <div style={{width:72,height:72,borderRadius:"50%",background:"rgba(255,255,255,0.2)",border:"3px solid rgba(255,255,255,0.5)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans',sans-serif",fontSize:26,fontWeight:700,color:T.white,marginBottom:14}}>{USER.avatar}</div>
+        <h2 style={{fontFamily:"'DM Sans',sans-serif",fontSize:22,fontWeight:700,color:T.white,margin:"0 0 2px"}}>{USER.name}</h2>
         <p style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"rgba(255,255,255,0.65)",margin:"0 0 8px"}}>{USER.handle}</p>
-        <p style={{fontFamily:"'Nunito',sans-serif",fontSize:13,color:"rgba(255,255,255,0.8)",margin:"0 0 2px"}}>
+        <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"rgba(255,255,255,0.8)",margin:"0 0 2px"}}>
           {geoState==="granted"&&userCoords?`📍 ${userCoords.lat.toFixed(4)}°N · ${Math.abs(userCoords.lng).toFixed(4)}°W`:`📍 ${USER.location}`}
         </p>
-        <p style={{fontFamily:"'Nunito',sans-serif",fontSize:13,color:"rgba(255,255,255,0.7)",margin:0,fontStyle:"italic"}}>{USER.bio}</p>
+        <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"rgba(255,255,255,0.7)",margin:0,fontStyle:"italic"}}>{USER.bio}</p>
       </div>
       <div style={{padding:"24px 20px"}}>
         {/* Location card */}
-        <div style={{background:T.white,borderRadius:14,padding:"13px 16px",marginBottom:20,boxShadow:`0 1px 6px ${T.shadow}`,display:"flex",alignItems:"center",gap:12}}>
+        <div style={{background:T.white,borderRadius:2,padding:"13px 16px",marginBottom:20,boxShadow:`0 1px 6px ${T.shadow}`,display:"flex",alignItems:"center",gap:12}}>
           <span style={{fontSize:22}}>📍</span>
           <div style={{flex:1}}>
-            <div style={{fontFamily:"'Nunito',sans-serif",fontSize:13,fontWeight:700,color:T.ink}}>
+            <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700,color:T.ink}}>
               Location: {geoState==="granted"?"Active ✓":geoState==="denied"?"Denied":geoState==="loading"?"Requesting…":"Not enabled"}
             </div>
             <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:geoState==="granted"?T.pine:T.stone,marginTop:2}}>
@@ -260,10 +260,10 @@ function ProfileView({saved,events,userCoords,geoState}){
           <div style={{width:10,height:10,borderRadius:"50%",background:geoState==="granted"?T.pine:geoState==="denied"?T.ember:T.sandDark,flexShrink:0}}/>
         </div>
         {/* Supabase card */}
-        <div style={{background:T.white,borderRadius:14,padding:"13px 16px",marginBottom:20,boxShadow:`0 1px 6px ${T.shadow}`,display:"flex",alignItems:"center",gap:12}}>
+        <div style={{background:T.white,borderRadius:2,padding:"13px 16px",marginBottom:20,boxShadow:`0 1px 6px ${T.shadow}`,display:"flex",alignItems:"center",gap:12}}>
           <span style={{fontSize:22}}>🗄️</span>
           <div style={{flex:1}}>
-            <div style={{fontFamily:"'Nunito',sans-serif",fontSize:13,fontWeight:700,color:T.ink}}>
+            <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700,color:T.ink}}>
               Database: {SUPABASE_READY?"Supabase connected":"Demo mode"}
             </div>
             <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:SUPABASE_READY?T.pine:T.stone,marginTop:2}}>
@@ -273,33 +273,33 @@ function ProfileView({saved,events,userCoords,geoState}){
           <div style={{width:10,height:10,borderRadius:"50%",background:SUPABASE_READY?T.pine:T.sandDark,flexShrink:0}}/>
         </div>
         {/* Stats */}
-        <div style={{display:"flex",background:T.white,borderRadius:16,boxShadow:`0 2px 12px ${T.shadow}`,marginBottom:24,overflow:"hidden"}}>
+        <div style={{display:"flex",background:T.white,borderRadius:2,boxShadow:`0 2px 12px ${T.shadow}`,marginBottom:24,overflow:"hidden"}}>
           {[{label:"Saved",value:saved.size},{label:"Interests",value:USER.interests.length},{label:"Member",value:"'24"}].map((s,i)=>(
             <div key={i} style={{flex:1,textAlign:"center",padding:"16px 8px",borderRight:i<2?`1px solid ${T.sandMid}`:"none"}}>
-              <div style={{fontFamily:"'Fraunces',serif",fontSize:20,fontWeight:700,color:T.ink}}>{s.value}</div>
+              <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:20,fontWeight:700,color:T.ink}}>{s.value}</div>
               <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:T.stone,textTransform:"uppercase",letterSpacing:"0.08em",marginTop:2}}>{s.label}</div>
             </div>
           ))}
         </div>
         {/* Interests */}
-        <h3 style={{fontFamily:"'Fraunces',serif",fontSize:16,fontWeight:700,color:T.ink,marginBottom:10}}>My Interests</h3>
+        <h3 style={{fontFamily:"'DM Sans',sans-serif",fontSize:16,fontWeight:700,color:T.ink,marginBottom:10}}>My Interests</h3>
         <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:24}}>
-          {USER.interests.map(int=>{const cat=Object.values(CAT_META).find(m=>m.label.includes(int.split(" ")[0]));return(<span key={int} style={{background:cat?.bg||T.sandMid,color:cat?.color||T.stone,borderRadius:20,padding:"6px 14px",fontFamily:"'Nunito',sans-serif",fontSize:13,fontWeight:700}}>{int}</span>);})}
+          {USER.interests.map(int=>{const cat=Object.values(CAT_META).find(m=>m.label.includes(int.split(" ")[0]));return(<span key={int} style={{background:cat?.bg||T.sandMid,color:cat?.color||T.stone,borderRadius:2,padding:"6px 14px",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700}}>{int}</span>);})}
         </div>
         {/* Saved list */}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-          <h3 style={{fontFamily:"'Fraunces',serif",fontSize:16,fontWeight:700,color:T.ink,margin:0}}>Saved Events</h3>
+          <h3 style={{fontFamily:"'DM Sans',sans-serif",fontSize:16,fontWeight:700,color:T.ink,margin:0}}>Saved Events</h3>
           <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:T.stone}}>{saved.size} saved</span>
         </div>
         {sv.length===0?(
-          <div style={{background:T.sandMid,borderRadius:12,padding:"18px",textAlign:"center"}}><p style={{fontFamily:"'Nunito',sans-serif",fontSize:14,color:T.inkMute}}>Bookmark events from the feed</p></div>
+          <div style={{background:T.sandMid,borderRadius:2,padding:"18px",textAlign:"center"}}><p style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,color:T.inkMute}}>Bookmark events from the feed</p></div>
         ):(
           <div style={{display:"flex",flexDirection:"column",gap:8}}>
-            {sv.map(e=>(<div key={e.id} style={{background:T.white,borderRadius:12,padding:"12px 14px",boxShadow:`0 1px 6px ${T.shadow}`,display:"flex",gap:10,alignItems:"center"}}>
+            {sv.map(e=>(<div key={e.id} style={{background:T.white,borderRadius:2,padding:"12px 14px",boxShadow:`0 1px 6px ${T.shadow}`,display:"flex",gap:10,alignItems:"center"}}>
               <span style={{fontSize:22}}>{e.emoji}</span>
               <div style={{flex:1,minWidth:0}}>
-                <div style={{fontFamily:"'Fraunces',serif",fontSize:14,fontWeight:700,color:T.ink,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{e.title}</div>
-                <div style={{fontFamily:"'Nunito',sans-serif",fontSize:11,color:T.inkMute,marginTop:2}}>{e.location}</div>
+                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:700,color:T.ink,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{e.title}</div>
+                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:T.inkMute,marginTop:2}}>{e.location}</div>
               </div>
               <TimeBadge time={e.time}/>
             </div>))}
@@ -379,33 +379,33 @@ export default function App(){
         input:focus{outline:none}
         button{user-select:none}
       `}</style>
-      <div style={{width:"100%",maxWidth:430,minHeight:"100vh",height:"100%",display:"flex",flexDirection:"column",background:T.sand,fontFamily:"'Nunito',sans-serif"}}>
+      <div style={{width:"100%",maxWidth:430,minHeight:"100vh",height:"100%",display:"flex",flexDirection:"column",background:T.sand,fontFamily:"'DM Sans',sans-serif"}}>
 
         {screen==="feed"&&(
           <header style={{position:"sticky",top:0,zIndex:40,background:"rgba(247,243,238,0.94)",backdropFilter:"blur(20px) saturate(1.5)",WebkitBackdropFilter:"blur(20px) saturate(1.5)",borderBottom:`1px solid ${T.sandDark}`,padding:"16px 18px 0"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
               <div>
-                <div style={{fontFamily:"'Fraunces',serif",fontSize:26,fontWeight:900,fontStyle:"italic",color:T.ink,letterSpacing:"-0.03em",lineHeight:1}}>
+                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:26,fontWeight:900,fontStyle:"italic",color:T.ink,letterSpacing:"-0.03em",lineHeight:1}}>
                   janey<span style={{color:T.ember}}>.</span>
                 </div>
                 <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:T.stone,letterSpacing:"0.1em",textTransform:"uppercase",marginTop:1}}>
                   {geoState==="granted"&&userCoords?`📍 ${userCoords.lat.toFixed(3)}°N · ${Math.abs(userCoords.lng).toFixed(3)}°W`:"Boulder, CO"}
                 </div>
               </div>
-              <div style={{display:"flex",alignItems:"center",gap:6,background:T.white,border:`1.5px solid ${T.sandDark}`,borderRadius:20,padding:"6px 12px",boxShadow:`0 1px 6px ${T.shadow}`}}>
+              <div style={{display:"flex",alignItems:"center",gap:6,background:T.white,border:`1.5px solid ${T.sandDark}`,borderRadius:2,padding:"6px 12px",boxShadow:`0 1px 6px ${T.shadow}`}}>
                 <LivePip/><span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:T.inkSoft,fontWeight:600}}>{liveCount} out now</span>
               </div>
             </div>
-            <div style={{display:"flex",alignItems:"center",gap:10,background:T.white,borderRadius:14,border:`1.5px solid ${T.sandDark}`,padding:"10px 14px",marginBottom:14,boxShadow:`0 1px 4px ${T.shadow}`}}>
+            <div style={{display:"flex",alignItems:"center",gap:10,background:T.white,borderRadius:2,border:`1.5px solid ${T.sandDark}`,padding:"10px 14px",marginBottom:14,boxShadow:`0 1px 4px ${T.shadow}`}}>
               <span style={{color:T.stone,fontSize:15}}>🔍</span>
-              <input placeholder="Search events, venues, vibes…" value={search} onChange={e=>setSearch(e.target.value)} style={{flex:1,background:"none",border:"none",fontFamily:"'Nunito',sans-serif",fontSize:14,color:T.ink}}/>
+              <input placeholder="Search events, venues, vibes…" value={search} onChange={e=>setSearch(e.target.value)} style={{flex:1,background:"none",border:"none",fontFamily:"'DM Sans',sans-serif",fontSize:14,color:T.ink}}/>
               {search&&<button onClick={()=>setSearch("")} style={{background:"none",border:"none",color:T.stone,cursor:"pointer",fontSize:18,lineHeight:1}}>×</button>}
             </div>
             <div style={{display:"flex",gap:6,marginBottom:14}}>
-              {FILTERS.map(f=>(<button key={f} onClick={()=>setFilter(f)} style={{flex:1,padding:"7px 2px",borderRadius:10,border:"none",background:activeFilter===f?T.ink:T.sandMid,color:activeFilter===f?T.white:T.inkMute,fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:600,letterSpacing:"0.04em",textTransform:"uppercase",cursor:"pointer",transition:"all .18s"}}>{f}</button>))}
+              {FILTERS.map(f=>(<button key={f} onClick={()=>setFilter(f)} style={{flex:1,padding:"7px 2px",borderRadius:2,border:"none",background:activeFilter===f?T.ink:T.sandMid,color:activeFilter===f?T.white:T.inkMute,fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:600,letterSpacing:"0.04em",textTransform:"uppercase",cursor:"pointer",transition:"all .18s"}}>{f}</button>))}
             </div>
             <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:14,WebkitOverflowScrolling:"touch"}}>
-              {CATEGORIES.map(c=>{const isA=activeCat===c.id;const meta=c.id!=="all"?CAT_META[c.id]:null;return(<button key={c.id} onClick={()=>setCat(c.id)} style={{flexShrink:0,padding:"6px 13px",borderRadius:20,border:`1.5px solid ${isA?(meta?.color||T.ink):T.sandDark}`,background:isA?(meta?.bg||T.ink):T.white,color:isA?(meta?.color||T.ink):T.inkMute,fontFamily:"'Nunito',sans-serif",fontSize:13,fontWeight:isA?700:600,cursor:"pointer",transition:"all .18s",whiteSpace:"nowrap",boxShadow:isA?`0 2px 8px ${meta?.color||T.ink}33`:"none"}}>{c.icon} {c.label}</button>);})}
+              {CATEGORIES.map(c=>{const isA=activeCat===c.id;const meta=c.id!=="all"?CAT_META[c.id]:null;return(<button key={c.id} onClick={()=>setCat(c.id)} style={{flexShrink:0,padding:"6px 13px",borderRadius:2,border:`1.5px solid ${isA?(meta?.color||T.ink):T.sandDark}`,background:isA?(meta?.bg||T.ink):T.white,color:isA?(meta?.color||T.ink):T.inkMute,fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:isA?700:600,cursor:"pointer",transition:"all .18s",whiteSpace:"nowrap",boxShadow:isA?`0 2px 8px ${meta?.color||T.ink}33`:"none"}}>{c.icon} {c.label}</button>);})}
             </div>
           </header>
         )}
@@ -414,18 +414,18 @@ export default function App(){
           <main style={{flex:1,overflowY:"auto",padding:"16px 16px 100px"}}>
             <GeoBanner geoState={geoState} onRequest={requestGeo}/>
             {!SUPABASE_READY&&(
-              <div style={{display:"flex",alignItems:"center",gap:8,background:T.goldLt,borderRadius:10,padding:"8px 14px",marginBottom:12}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,background:T.goldLt,borderRadius:2,padding:"8px 14px",marginBottom:12}}>
                 <span style={{fontSize:13}}>⚡</span>
                 <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:T.gold,fontWeight:600}}>Demo mode — add Supabase credentials to go live</span>
               </div>
             )}
-            {dbError&&<div style={{background:"#FEE9E0",borderRadius:10,padding:"8px 14px",marginBottom:12}}><span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:T.ember}}>DB: {dbError}</span></div>}
+            {dbError&&<div style={{background:"#FEE9E0",borderRadius:2,padding:"8px 14px",marginBottom:12}}><span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:T.ember}}>DB: {dbError}</span></div>}
             {!search&&(
               <div style={{marginBottom:16}}>
-                <h2 style={{fontFamily:"'Fraunces',serif",fontSize:21,fontWeight:700,color:T.ink,lineHeight:1.2,letterSpacing:"-0.02em"}}>
+                <h2 style={{fontFamily:"'DM Sans',sans-serif",fontSize:21,fontWeight:700,color:T.ink,lineHeight:1.2,letterSpacing:"-0.02em"}}>
                   {activeFilter==="Now"&&"Happening right now"}{activeFilter==="Tonight"&&"Going on tonight"}{activeFilter==="This Weekend"&&"This weekend in Boulder"}{activeFilter==="Trending"&&"Trending around town"}
                 </h2>
-                <p style={{fontFamily:"'Nunito',sans-serif",fontSize:13,color:T.stone,marginTop:3}}>
+                <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:T.stone,marginTop:3}}>
                   {filtered.length} {filtered.length===1?"experience":"experiences"}{userCoords?" · sorted by distance":""}
                 </p>
               </div>
@@ -439,8 +439,8 @@ export default function App(){
             ):(
               <div style={{textAlign:"center",padding:"60px 20px",animation:"fadeIn .4s ease"}}>
                 <div style={{fontSize:48,marginBottom:16}}>🏔️</div>
-                <h3 style={{fontFamily:"'Fraunces',serif",fontSize:20,color:T.inkMute,marginBottom:8}}>Nothing here right now</h3>
-                <p style={{fontFamily:"'Nunito',sans-serif",fontSize:14,color:T.stone}}>Try a different filter or category</p>
+                <h3 style={{fontFamily:"'DM Sans',sans-serif",fontSize:20,color:T.inkMute,marginBottom:8}}>Nothing here right now</h3>
+                <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,color:T.stone}}>Try a different filter or category</p>
               </div>
             )}
           </main>
