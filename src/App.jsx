@@ -21,9 +21,9 @@ function fmt(mi){if(mi===null)return"—";if(mi<0.1)return"<0.1 mi";return`${mi.
 // Replace these two values with your real Supabase project credentials.
 // Everything else is already wired — the app will use Supabase automatically
 // when SUPABASE_URL doesn't start with "YOUR_".
-const SUPABASE_URL  = "https://lknoxozdbkikysxoarzu.supabase.co";
-const SUPABASE_ANON = "sb_publishable_myANV71Ao-e3TRTqM5UuOA_mTobfrdH";
-const SUPABASE_READY = !SUPABASE_URL.startsWith("YOUR_");
+const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL || "https://lknoxozdbkikysxoarzu.supabase.co";
+const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON || "sb_publishable_myANV71Ao-e3TRTqM5UuOA_mTobfrdH";
+const SUPABASE_READY = SUPABASE_URL.includes("supabase.co");
 
 async function sbFetch(path,opts={}){
   const res=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{
