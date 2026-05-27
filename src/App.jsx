@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 const T = {
-  sand:"#F7F3EE",sandMid:"#EDE6DB",sandDark:"#D9CDBF",
-  stone:"#9E9287",ink:"#1C1917",inkSoft:"#44403C",inkMute:"#78716C",
-  ember:"#C05C28",emberLt:"#E8824A",emberXlt:"#FBE9DA",
-  pine:"#3A6B4A",pineLt:"#EAF3EC",sky:"#3B6FA0",skyLt:"#E5EEF7",
+  sand:"#F0F8FC",sandMid:"#D9EEF7",sandDark:"#B8D8EA",
+  stone:"#9E9287",ink:"#0A0A0A",inkSoft:"#44403C",inkMute:"#78716C",
+  ember:"#FF6B6B",emberLt:"#FF8E8E",emberXlt:"#FFE8E8",
+  pine:"#3A6B4A",pineLt:"#EAF3EC",sky:"#0096C7",skyLt:"#E0F5FF",
   gold:"#B5871A",goldLt:"#FDF3DC",mauve:"#8B5E8A",mauveLt:"#F3EAF3",
   white:"#FFFFFF",shadow:"rgba(28,25,23,0.08)",shadowMd:"rgba(28,25,23,0.14)",
 };
@@ -70,14 +70,14 @@ const FILTERS=["Now","Tonight","This Weekend","Trending"];
 const MOCK_EVENTS=[
   {id:1,cat:"music",time:"Now",is_trending:true,title:"Leftover Salmon — Acoustic Set",location:"The Sink · The Hill",vibe:"Bluegrass jam · Outdoor patio",gradient:"linear-gradient(145deg,#6B3FA0,#3B1F6B)",emoji:"🎸",lat:40.0090,lng:-105.2711},
   {id:2,cat:"outdoor",time:"Now",is_trending:false,title:"Sunset Hike — Royal Arch Trail",location:"Chautauqua Park · S Boulder",vibe:"Moderate · Golden hour views",gradient:"linear-gradient(145deg,#3A6B4A,#1F3D2A)",emoji:"🏔️",lat:39.9995,lng:-105.2811},
-  {id:3,cat:"food",time:"Tonight",is_trending:true,title:"Tap Release Night",location:"Avery Brewing Co. · Gunbarrel",vibe:"Limited IPA drop · Patio open",gradient:"linear-gradient(145deg,#C05C28,#7A3010)",emoji:"🍺",lat:40.0374,lng:-105.2518},
+  {id:3,cat:"food",time:"Tonight",is_trending:true,title:"Tap Release Night",location:"Avery Brewing Co. · Gunbarrel",vibe:"Limited IPA drop · Patio open",gradient:"linear-gradient(145deg,#FF6B6B,#7A3010)",emoji:"🍺",lat:40.0374,lng:-105.2518},
   {id:4,cat:"wellness",time:"Tonight",is_trending:false,title:"Flow Yoga Under the Stars",location:"Boulder Creek Path · Downtown",vibe:"All levels · BYO mat",gradient:"linear-gradient(145deg,#B5871A,#7A5610)",emoji:"🧘",lat:40.0143,lng:-105.2766},
-  {id:5,cat:"sports",time:"Now",is_trending:true,title:"Pickup Ultimate Frisbee",location:"Scott Carpenter Park · E Boulder",vibe:"All levels · Free to join",gradient:"linear-gradient(145deg,#3B6FA0,#1F3D62)",emoji:"🥏",lat:40.0142,lng:-105.2487},
+  {id:5,cat:"sports",time:"Now",is_trending:true,title:"Pickup Ultimate Frisbee",location:"Scott Carpenter Park · E Boulder",vibe:"All levels · Free to join",gradient:"linear-gradient(145deg,#0096C7,#1F3D62)",emoji:"🥏",lat:40.0142,lng:-105.2487},
   {id:6,cat:"community",time:"Tonight",is_trending:false,title:"Farmers Market Wind-Down",location:"13th & Canyon · Downtown",vibe:"Local vendors · Pet friendly",gradient:"linear-gradient(145deg,#7A6A5A,#4A3D30)",emoji:"🌿",lat:40.0165,lng:-105.2795},
   {id:7,cat:"music",time:"Tonight",is_trending:false,title:"Jazz on the Creek",location:"Foolish Craig's · The Hill",vibe:"Live jazz trio · Outdoor seating",gradient:"linear-gradient(145deg,#8B5E8A,#4A2F4A)",emoji:"🎷",lat:40.0093,lng:-105.2723},
-  {id:8,cat:"outdoor",time:"This Weekend",is_trending:true,title:"Dawn Paddle — Boulder Reservoir",location:"Boulder Reservoir · N Boulder",vibe:"Kayak rental available · Calm water",gradient:"linear-gradient(145deg,#3B6FA0,#1F3D62)",emoji:"🚣",lat:40.0603,lng:-105.2257},
+  {id:8,cat:"outdoor",time:"This Weekend",is_trending:true,title:"Dawn Paddle — Boulder Reservoir",location:"Boulder Reservoir · N Boulder",vibe:"Kayak rental available · Calm water",gradient:"linear-gradient(145deg,#0096C7,#1F3D62)",emoji:"🚣",lat:40.0603,lng:-105.2257},
   {id:9,cat:"wellness",time:"This Weekend",is_trending:false,title:"Forest Bathing Walk",location:"Betasso Preserve · Boulder Canyon",vibe:"Guided · Meditative · 2 hrs",gradient:"linear-gradient(145deg,#3A6B4A,#1F3D2A)",emoji:"🌲",lat:40.0031,lng:-105.3437},
-  {id:10,cat:"sports",time:"This Weekend",is_trending:true,title:"Saturday Soccer — Open Run",location:"Valmont Sports Park",vibe:"Co-ed · All skill levels",gradient:"linear-gradient(145deg,#3B6FA0,#1F3D62)",emoji:"⚽",lat:40.0208,lng:-105.2366},
+  {id:10,cat:"sports",time:"This Weekend",is_trending:true,title:"Saturday Soccer — Open Run",location:"Valmont Sports Park",vibe:"Co-ed · All skill levels",gradient:"linear-gradient(145deg,#0096C7,#1F3D62)",emoji:"⚽",lat:40.0208,lng:-105.2366},
 ];
 
 // Boulder bounding box → SVG %
@@ -386,7 +386,7 @@ export default function App(){
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
               <div>
                 <div style={{fontFamily:"'Fraunces',serif",fontSize:26,fontWeight:900,fontStyle:"italic",color:T.ink,letterSpacing:"-0.03em",lineHeight:1}}>
-                  drift<span style={{color:T.ember}}>.</span>
+                  janey<span style={{color:T.ember}}>.</span>
                 </div>
                 <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:T.stone,letterSpacing:"0.1em",textTransform:"uppercase",marginTop:1}}>
                   {geoState==="granted"&&userCoords?`📍 ${userCoords.lat.toFixed(3)}°N · ${Math.abs(userCoords.lng).toFixed(3)}°W`:"Boulder, CO"}
