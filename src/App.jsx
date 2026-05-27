@@ -21,9 +21,9 @@ function fmt(mi){if(mi===null)return"—";if(mi<0.1)return"<0.1 mi";return`${mi.
 // Replace these two values with your real Supabase project credentials.
 // Everything else is already wired — the app will use Supabase automatically
 // when SUPABASE_URL doesn't start with "YOUR_".
-const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL  || "https://lknoxozdbkikysxoarzu.supabase.co";
-const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON || "sb_publishable_myANV71Ao-e3TRTqM5UuOA_mTobfrdH";
-const SUPABASE_READY = SUPABASE_URL.includes("supabase.co");
+const SUPABASE_URL  = "https://lknoxozdbkikysxoarzu.supabase.co";
+const SUPABASE_ANON = "sb_publishable_myANV71Ao-e3TRTqM5UuOA_mTobfrdH";
+const SUPABASE_READY = !SUPABASE_URL.startsWith("YOUR_");
 
 async function sbFetch(path,opts={}){
   const res=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{
@@ -386,7 +386,7 @@ export default function App(){
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
               <div>
                 <div style={{fontFamily:"'Fraunces',serif",fontSize:26,fontWeight:900,fontStyle:"italic",color:T.ink,letterSpacing:"-0.03em",lineHeight:1}}>
-                  janey<span style={{color:T.ember}}>.</span>
+                  drift<span style={{color:T.ember}}>.</span>
                 </div>
                 <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:T.stone,letterSpacing:"0.1em",textTransform:"uppercase",marginTop:1}}>
                   {geoState==="granted"&&userCoords?`📍 ${userCoords.lat.toFixed(3)}°N · ${Math.abs(userCoords.lng).toFixed(3)}°W`:"Boulder, CO"}
