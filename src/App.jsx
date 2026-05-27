@@ -365,7 +365,7 @@ export default function App(){
   return(
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,900;1,9..144,700&family=Nunito:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@700&');
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
         html,body,#root{height:100%}
         body{background:#E8E0D8;display:flex;justify-content:center}
@@ -386,7 +386,7 @@ export default function App(){
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
               <div>
                 <div style={{fontFamily:"'Fraunces',serif",fontSize:26,fontWeight:900,fontStyle:"italic",color:T.ink,letterSpacing:"-0.03em",lineHeight:1}}>
-                  drift<span style={{color:T.ember}}>.</span>
+                  <span style={{fontFamily:"'Caveat',cursive",fontSize:30,fontWeight:700}}>go </span>janey<span style={{color:'#D9A441'}}>.</span>
                 </div>
                 <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:T.stone,letterSpacing:"0.1em",textTransform:"uppercase",marginTop:1}}>
                   {geoState==="granted"&&userCoords?`📍 ${userCoords.lat.toFixed(3)}°N · ${Math.abs(userCoords.lng).toFixed(3)}°W`:"Boulder, CO"}
