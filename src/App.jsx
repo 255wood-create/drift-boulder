@@ -115,12 +115,12 @@ function EventCard({event,saved,interested,onSave,onInterest,index,distMiles}){
         </div>
       </div>
       {/* Compact footer */}
-      <div style={{padding:"3px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+      <div style={{padding:"8px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         <div style={{minWidth:0,flex:1}}>
-          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:T.charcoal,fontWeight:600,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>📍 {event.location}{distMiles!=null?` · ${fmt(distMiles)}`:""}</div>
-          {event.vibe&&<div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:T.charcoalMute,fontStyle:"italic",marginTop:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{event.vibe}</div>}
+          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:T.sage,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>📍 {event.location}{distMiles!=null?` · ${fmt(distMiles)}`:""}</div>
+          {event.vibe&&<div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:T.stone,fontStyle:"italic",marginTop:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{event.vibe}</div>}
         </div>
-        <button onClick={e=>{e.stopPropagation();onInterest();}} style={{background:interested?T.amber:T.fog,color:interested?T.charcoal:T.sage,border:`0.5px solid ${interested?T.amber:T.stone}`,padding:"5px 10px",fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:700,cursor:"pointer",flexShrink:0,marginLeft:8,whiteSpace:"nowrap"}}>
+        <button onClick={e=>{e.stopPropagation();onInterest();}} style={{background:interested?T.amber:T.fog,color:interested?T.charcoal:T.sage,border:`0.5px solid ${interested?T.amber:T.stone}`,padding:"5px 10px",fontFamily:"'DM Sans',sans-serif",fontSize:10,fontWeight:700,cursor:"pointer",flexShrink:0,marginLeft:8,whiteSpace:"nowrap"}}>
           {interested?"✦ Interested":"✦ Going?"}
         </button>
       </div>
