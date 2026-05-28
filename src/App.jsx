@@ -368,7 +368,7 @@ export default function App(){
             </div>
 
             {/* Time filters */}
-            <div style={{padding:"0 16px 12px",display:"flex",gap:4,overflowX:"auto",WebkitOverflowScrolling:"touch",justifyContent:"space-between"}}>
+            <div style={{padding:"0 0 12px 0",display:"flex",gap:0,overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
               {FILTERS.map(f=>(<button key={f} onClick={()=>setFilter(f)} style={{padding:"4px 9px",background:activeFilter===f?T.amber:"rgba(245,243,239,0.1)",color:activeFilter===f?T.charcoal:"rgba(245,243,239,0.6)",border:"none",fontFamily:"'DM Sans',sans-serif",fontSize:10,fontWeight:700,letterSpacing:"0.04em",textTransform:"uppercase",cursor:"pointer",transition:"all .18s"}}>{f}</button>))}
             </div>
 
