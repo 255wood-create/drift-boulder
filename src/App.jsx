@@ -62,7 +62,7 @@ const CAT_META={
   community:{color:T.sage,bg:T.sageLt,label:"Community",gradBg:"linear-gradient(160deg,#2A3D30,#151F18)",gradAccent:"rgba(143,175,154,0.3)"},
 };
 
-const FILTERS=["Now","Tonight","This Weekend","Trending"];
+const FILTERS=["Now","Tonight","Tomorrow","This Weekend","Coming Up","Trending"];
 
 const MOCK_EVENTS=[
   {id:1,cat:"music",time:"Now",is_trending:true,title:"Leftover Salmon — Acoustic Set",location:"The Sink · The Hill",vibe:"Bluegrass jam · Outdoor patio",lat:40.0090,lng:-105.2711},
@@ -370,7 +370,7 @@ export default function App(){
             </div>
 
             {/* Time filters */}
-            <div style={{padding:"0 20px 12px",display:"flex",gap:6}}>
+            <div style={{padding:"0 20px 12px",display:"flex",gap:6,overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
               {FILTERS.map(f=>(<button key={f} onClick={()=>setFilter(f)} style={{padding:"5px 12px",background:activeFilter===f?T.amber:"rgba(245,243,239,0.1)",color:activeFilter===f?T.charcoal:"rgba(245,243,239,0.6)",border:"none",fontFamily:"'DM Sans',sans-serif",fontSize:10,fontWeight:700,letterSpacing:"0.04em",textTransform:"uppercase",cursor:"pointer",transition:"all .18s"}}>{f}</button>))}
             </div>
 
@@ -399,7 +399,9 @@ export default function App(){
                 <h2 style={{fontFamily:"'DM Sans',sans-serif",fontSize:19,fontWeight:800,color:T.charcoal,lineHeight:1.2,letterSpacing:"-0.02em"}}>
                   {activeFilter==="Now"&&"Happening right now"}
                   {activeFilter==="Tonight"&&"Going on tonight"}
+                  {activeFilter==="Tomorrow"&&"Tomorrow in Boulder"}
                   {activeFilter==="This Weekend"&&"This weekend in Boulder"}
+                  {activeFilter==="Coming Up"&&"Coming up soon"}
                   {activeFilter==="Trending"&&"Trending around town"}
                 </h2>
                 <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:T.sage,marginTop:3}}>
