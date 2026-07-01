@@ -24,30 +24,19 @@ const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON || "eyJhbGciOiJIUzI1NiI
 const SUPABASE_READY = true;
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
 
-async function sbFetch(path,opts={}){
-  const res=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{
-    headers:{apikey:SUPABASE_ANON,Authorization:`Bearer ${SUPABASE_ANON}`,"Content-Type":"application/json",Prefer:"return=representation",...opts.headers},
-    ...opts,
-  });
-  if(!res.ok)throw new Error(await res.text());
-  return res.json();
+async function fetchEventsFromDb(){
+  const { data, error } = await supabase.from('events').select('*').order('starts_at');
+  if (error) throw new Error(error.message);
+  return data || [];
 }
-async function fetchEventsFromDb({timeBucket,category}){
-  let q="events?select=*&order=starts_at.asc";
-  if(timeBucket&&timeBucket!=="Trending")q+=`&time_bucket=eq.${timeBucket}`;
-  if(timeBucket==="Trending")q+="&is_trending=eq.true";
-  if(category&&category!=="all")q+=`&category=eq.${category}`;
-  return sbFetch(q);
+async function toggleSavedDb(userId, eventId, wasSaved){
+  if(wasSaved) await supabase.from('saved_events').delete().match({user_id:userId, event_id:eventId});
+  else await supabase.from('saved_events').insert({user_id:userId, event_id:eventId});
 }
-async function toggleSavedDb(userId,eventId,wasSaved){
-  if(wasSaved)return sbFetch(`saved_events?user_id=eq.${userId}&event_id=eq.${eventId}`,{method:"DELETE"});
-  return sbFetch("saved_events",{method:"POST",body:JSON.stringify({user_id:userId,event_id:eventId})});
+async function toggleIntDb(userId, eventId, wasInt){
+  if(wasInt) await supabase.from('interested').delete().match({user_id:userId, event_id:eventId});
+  else await supabase.from('interested').insert({user_id:userId, event_id:eventId});
 }
-async function toggleIntDb(userId,eventId,wasInt){
-  if(wasInt)return sbFetch(`interested?user_id=eq.${userId}&event_id=eq.${eventId}`,{method:"DELETE"});
-  return sbFetch("interested",{method:"POST",body:JSON.stringify({user_id:userId,event_id:eventId})});
-}
-
 const CATEGORIES=[
   {id:"all",label:"All",icon:"✦"},{id:"music",label:"Live Music",icon:"♪"},
   {id:"sports",label:"Sports / Fitness",icon:"◎"},{id:"food",label:"Food / Social",icon:"○"},
