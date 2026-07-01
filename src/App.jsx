@@ -51,14 +51,14 @@ const CAT_META={
   community:{color:T.sage,bg:T.sageLt,label:"Community",gradBg:"linear-gradient(160deg,#2A3D30,#151F18)",gradAccent:"rgba(143,175,154,0.3)"},
 };
 
-const FILTERS=["Now","Tonight","Tomorrow","This Weekend","Coming Up","Trending"];
+const FILTERS=["Today","Tonight","Tomorrow","This Weekend","Coming Up","Trending"];
 
 const MOCK_EVENTS=[
-  {id:1,cat:"music",time:"Now",is_trending:true,title:"Leftover Salmon — Acoustic Set",location:"The Sink · The Hill",vibe:"Bluegrass jam · Outdoor patio",lat:40.0090,lng:-105.2711},
-  {id:2,cat:"outdoor",time:"Now",is_trending:false,title:"Sunset Hike — Royal Arch Trail",location:"Chautauqua Park · S Boulder",vibe:"Moderate · Golden hour views",lat:39.9995,lng:-105.2811},
+  {id:1,cat:"music",time:"Today",is_trending:true,title:"Leftover Salmon — Acoustic Set",location:"The Sink · The Hill",vibe:"Bluegrass jam · Outdoor patio",lat:40.0090,lng:-105.2711},
+  {id:2,cat:"outdoor",time:"Today",is_trending:false,title:"Sunset Hike — Royal Arch Trail",location:"Chautauqua Park · S Boulder",vibe:"Moderate · Golden hour views",lat:39.9995,lng:-105.2811},
   {id:3,cat:"food",time:"Tonight",is_trending:true,title:"Tap Release Night",location:"Avery Brewing Co. · Gunbarrel",vibe:"Limited IPA drop · Patio open",lat:40.0374,lng:-105.2518},
   {id:4,cat:"wellness",time:"Tonight",is_trending:false,title:"Flow Yoga Under the Stars",location:"Boulder Creek Path · Downtown",vibe:"All levels · BYO mat",lat:40.0143,lng:-105.2766},
-  {id:5,cat:"sports",time:"Now",is_trending:true,title:"Pickup Ultimate Frisbee",location:"Scott Carpenter Park · E Boulder",vibe:"All levels · Free to join",lat:40.0142,lng:-105.2487},
+  {id:5,cat:"sports",time:"Today",is_trending:true,title:"Pickup Ultimate Frisbee",location:"Scott Carpenter Park · E Boulder",vibe:"All levels · Free to join",lat:40.0142,lng:-105.2487},
   {id:6,cat:"community",time:"Tonight",is_trending:false,title:"Farmers Market Wind-Down",location:"13th & Canyon · Downtown",vibe:"Local vendors · Pet friendly",lat:40.0165,lng:-105.2795},
   {id:7,cat:"music",time:"Tonight",is_trending:false,title:"Jazz on the Creek",location:"Foolish Craig's · The Hill",vibe:"Live jazz trio · Outdoor seating",lat:40.0093,lng:-105.2723},
   {id:8,cat:"outdoor",time:"This Weekend",is_trending:true,title:"Dawn Paddle — Boulder Reservoir",location:"Boulder Reservoir · N Boulder",vibe:"Kayak rental available · Calm water",lat:40.0603,lng:-105.2257},
@@ -75,7 +75,7 @@ function LivePip(){return(<span style={{position:"relative",display:"inline-flex
 
 function TimeBadge({time}){
   const s={Now:{bg:T.amber,color:T.charcoal},Tonight:{bg:T.skyLt,color:T.sky},"This Weekend":{bg:T.pineLt,color:T.pine},Trending:{bg:T.amberLt,color:T.amber}}[time]||{bg:T.stone,color:T.charcoalMute};
-  return(<span style={{display:"inline-flex",alignItems:"center",gap:4,background:s.bg,color:s.color,padding:"1px 7px",fontFamily:"'DM Sans',sans-serif",fontSize:9,fontWeight:700,letterSpacing:"0.05em",textTransform:"uppercase"}}>{time==="Now"&&<LivePip/>}{time}</span>);
+  return(<span style={{display:"inline-flex",alignItems:"center",gap:4,background:s.bg,color:s.color,padding:"1px 7px",fontFamily:"'DM Sans',sans-serif",fontSize:9,fontWeight:700,letterSpacing:"0.05em",textTransform:"uppercase"}}>{time==="Today"&&<LivePip/>}{time}</span>);
 }
 
 function SaveBtn({saved,onToggle}){
@@ -272,7 +272,7 @@ function GeoBanner({geoState,onRequest}){
 
 export default function App(){
   const[screen,setScreen]=useState("feed");
-  const[activeFilter,setFilter]=useState("Now");
+  const[activeFilter,setFilter]=useState("Today");
   const[activeCat,setCat]=useState("all");
   const[saved,setSaved]=useState(new Set());
   const[interested,setInterested]=useState(new Set());
@@ -386,7 +386,7 @@ export default function App(){
             {!search&&(
               <div style={{marginBottom:14}}>
                 <h2 style={{fontFamily:"'DM Sans',sans-serif",fontSize:19,fontWeight:800,color:T.charcoal,lineHeight:1.2,letterSpacing:"-0.02em"}}>
-                  {activeFilter==="Now"&&"Happening right now"}
+                  {activeFilter==="Today"&&"Happening today"}
                   {activeFilter==="Tonight"&&"Going on tonight"}
                   {activeFilter==="Tomorrow"&&"Tomorrow in Boulder"}
                   {activeFilter==="This Weekend"&&"This weekend in Boulder"}
