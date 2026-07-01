@@ -51,7 +51,7 @@ const CAT_META={
   community:{color:T.sage,bg:T.sageLt,label:"Community",gradBg:"linear-gradient(160deg,#2A3D30,#151F18)",gradAccent:"rgba(143,175,154,0.3)"},
 };
 
-const FILTERS=["Today","Tonight","Tomorrow","This Weekend","Coming Up","Trending"];
+const FILTERS=["Today","Tonight","Tomorrow","This Weekend","Coming Up"];
 
 const MOCK_EVENTS=[
   {id:1,cat:"music",time:"Today",is_trending:true,title:"Leftover Salmon — Acoustic Set",location:"The Sink · The Hill",vibe:"Bluegrass jam · Outdoor patio",lat:40.0090,lng:-105.2711},
@@ -313,8 +313,7 @@ export default function App(){
 
   const filtered=withDist.filter(e=>{
     if(activeCat!=="all"&&e.category!==activeCat)return false;
-    if(activeFilter==="Trending"&&!e.is_trending)return false;
-    if(activeFilter!=="Trending"&&e.time_bucket!==activeFilter)return false;
+        if(activeFilter!=="Trending"&&e.time_bucket!==activeFilter)return false;
     if(search&&!e.title.toLowerCase().includes(search.toLowerCase())&&!e.location.toLowerCase().includes(search.toLowerCase())&&!(e.vibe||"").toLowerCase().includes(search.toLowerCase()))return false;
     return true;
   }).sort((a,b)=>a.distMiles!=null&&b.distMiles!=null?a.distMiles-b.distMiles:0);
