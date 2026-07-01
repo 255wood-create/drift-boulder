@@ -314,7 +314,7 @@ export default function App(){
     setLoading(true);setDbError(null);
     fetchEventsFromDb({timeBucket:activeFilter,category:activeCat})
       .then(rows=>{setEvents(rows.length?rows:MOCK_EVENTS);setLoading(false);})
-      .catch(err=>{setDbError(err.message);setLoading(false);});
+      .catch(err=>{setDbError(err.message);console.error("Supabase error:", err);setLoading(false);});
   },[activeFilter,activeCat]);
 
   const withDist=events.map(e=>({...e,distMiles:userCoords&&e.lat?haversine(userCoords.lat,userCoords.lng,e.lat,e.lng):null}));
