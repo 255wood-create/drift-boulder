@@ -323,7 +323,7 @@ function SavedView({events,saved,interested,onSave,onInterest}){
   );
 }
 
-function ProfileView({user,authEmail,setAuthEmail,authMsg,signIn,signInApple,signOut,saved,events}){
+function ProfileView({user,authEmail,setAuthEmail,authMsg,signIn,signInApple,signOut,saved,events,isNative}){
   if(!user){
     return(
       <div style={{flex:1,padding:"60px 20px",display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center"}}>
@@ -331,7 +331,7 @@ function ProfileView({user,authEmail,setAuthEmail,authMsg,signIn,signInApple,sig
         <h2 style={{fontFamily:"'Inter',sans-serif",fontSize:20,fontWeight:600,color:"#1F2320",marginBottom:8}}>Sign in to go janey.</h2>
         <p style={{fontFamily:"'Inter',sans-serif",fontSize:13,color:"#6B706C",marginBottom:24}}>Save events and build your profile</p>
         <div style={{width:"100%",maxWidth:300,display:"flex",flexDirection:"column",gap:10}}>
-          {CapCore.isNativePlatform()&&(
+          {isNative&&(
             <button onClick={signInApple} style={{width:"100%",boxSizing:"border-box",background:"#000",color:"#fff",border:"none",padding:"12px 24px",fontFamily:"'Inter',sans-serif",fontSize:15,fontWeight:600,cursor:"pointer"}}>{""} Sign in with Apple</button>
           )}
           <input value={authEmail} onChange={e=>setAuthEmail(e.target.value)} placeholder="Your email" type="email" style={{width:"100%",boxSizing:"border-box",padding:"10px 14px",border:"1px solid #D9D6CF",fontFamily:"'Inter',sans-serif",fontSize:14}}/>
@@ -362,6 +362,11 @@ function ProfileView({user,authEmail,setAuthEmail,authMsg,signIn,signInApple,sig
 }
 
 export default function App(){
+  // Captured once at startup and never re-checked: isNativePlatform() should be constant
+  // for the life of the app, but the gojaney:// deep-link hand-off used by the email
+  // sign-in flow was observed to make later calls return false, hiding the Apple button
+  // after an email sign-in/out cycle. Caching the value here makes the UI immune to that.
+  const[isNative]=useState(()=>CapCore.isNativePlatform());
   const[screen,setScreen]=useState("feed");
   const[user,setUser]=useState(null);
   const[authEmail,setAuthEmail]=useState("");
@@ -401,7 +406,7 @@ export default function App(){
   // Guarded with try/catch: if the native plugin isn't linked yet (pod install not run),
   // this must not take the whole app down with it.
   useEffect(()=>{
-    if(!CapCore.isNativePlatform())return;
+    if(!isNative)return;
     let sub;
     try{
       sub=CapApp.addListener('appUrlOpen',async({url})=>{
@@ -432,7 +437,7 @@ export default function App(){
   const signIn=async()=>{
     if(!authEmail){setAuthMsg("Enter your email");return;}
     setAuthMsg("Sending...");
-    const redirectTo=CapCore.isNativePlatform()?'gojaney://login-callback':window.location.origin;
+    const redirectTo=isNative?'gojaney://login-callback':window.location.origin;
     const{error}=await supabase.auth.signInWithOtp({email:authEmail,options:{emailRedirectTo:redirectTo}});
     if(error)setAuthMsg(error.message);
     else setAuthMsg("Check your email for a sign-in link!");
@@ -605,7 +610,7 @@ export default function App(){
 
         {screen==="map"&&<MapView events={displayed} allEvents={withDist} activeFilter={activeFilter} setFilter={setFilter} activeCat={activeCat} setCat={setCat} saved={saved} interested={interested} onSave={toggleSave} onInterest={toggleInt}/>}
         {screen==="saved"&&<SavedView events={withDist} saved={saved} interested={interested} onSave={toggleSave} onInterest={toggleInt}/>}
-        {screen==="profile"&&<ProfileView user={user} authEmail={authEmail} setAuthEmail={setAuthEmail} authMsg={authMsg} signIn={signIn} signInApple={signInApple} signOut={signOut} saved={saved} events={events}/>}
+        {screen==="profile"&&<ProfileView user={user} authEmail={authEmail} setAuthEmail={setAuthEmail} authMsg={authMsg} signIn={signIn} signInApple={signInApple} signOut={signOut} saved={saved} events={events} isNative={isNative}/>}
 
         <nav style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:"rgba(245,243,239,0.97)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderTop:`0.5px solid ${T.stone}`,display:"flex",flexDirection:"column",zIndex:50,padding:"10px 0 max(16px,env(safe-area-inset-bottom))"}}>
           <p style={{fontFamily:"'Inter',sans-serif",fontSize:9,color:"#7A9583",textAlign:"center",padding:"0 10px",marginBottom:8}}>Before heading out, verify date, time, locations. We're good... not perfect.</p>
