@@ -332,14 +332,7 @@ function ProfileView({user,authEmail,setAuthEmail,authMsg,signIn,signInApple,sig
         <p style={{fontFamily:"'Inter',sans-serif",fontSize:13,color:"#6B706C",marginBottom:24}}>Save events and build your profile</p>
         <div style={{width:"100%",maxWidth:300,display:"flex",flexDirection:"column",gap:10}}>
           {CapCore.isNativePlatform()&&(
-            <>
-              <button onClick={signInApple} style={{width:"100%",boxSizing:"border-box",background:"#000",color:"#fff",border:"none",padding:"12px 24px",fontFamily:"'Inter',sans-serif",fontSize:15,fontWeight:600,cursor:"pointer"}}>{""} Sign in with Apple</button>
-              <div style={{display:"flex",alignItems:"center",gap:10,margin:"4px 0"}}>
-                <div style={{flex:1,height:1,background:"#D9D6CF"}}/>
-                <span style={{fontSize:12,color:"#888"}}>or use email</span>
-                <div style={{flex:1,height:1,background:"#D9D6CF"}}/>
-              </div>
-            </>
+            <button onClick={signInApple} style={{width:"100%",boxSizing:"border-box",background:"#000",color:"#fff",border:"none",padding:"12px 24px",fontFamily:"'Inter',sans-serif",fontSize:15,fontWeight:600,cursor:"pointer"}}>{""} Sign in with Apple</button>
           )}
           <input value={authEmail} onChange={e=>setAuthEmail(e.target.value)} placeholder="Your email" type="email" style={{width:"100%",boxSizing:"border-box",padding:"10px 14px",border:"1px solid #D9D6CF",fontFamily:"'Inter',sans-serif",fontSize:14}}/>
           <button onClick={signIn} style={{width:"100%",boxSizing:"border-box",background:"#2F5D50",color:"white",border:"none",padding:"10px 24px",fontFamily:"'Inter',sans-serif",fontSize:14,fontWeight:600,cursor:"pointer"}}>Send Sign-In Link</button>
