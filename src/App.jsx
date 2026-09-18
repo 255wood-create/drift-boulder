@@ -362,11 +362,22 @@ function ProfileView({user,authEmail,setAuthEmail,authMsg,signIn,signInApple,sig
 }
 
 export default function App(){
-  // Captured once at startup and never re-checked: isNativePlatform() should be constant
-  // for the life of the app, but the gojaney:// deep-link hand-off used by the email
-  // sign-in flow was observed to make later calls return false, hiding the Apple button
-  // after an email sign-in/out cycle. Caching the value here makes the UI immune to that.
-  const[isNative]=useState(()=>CapCore.isNativePlatform());
+  // The gojaney:// deep-link hand-off (email sign-in only) appears to cause a full page
+  // reload of the WebView, and isNativePlatform() can race with the native bridge and
+  // read false on that particular reload -- hiding the Apple button after an email
+  // sign-in/out cycle. Once we've correctly detected "native" on an ordinary launch
+  // (before any deep link is ever involved), that fact can never become untrue for this
+  // installed app, so persist it and trust the saved answer over any later live check.
+  const[isNative]=useState(()=>{
+    try{
+      if(localStorage.getItem('gj_native')==='1')return true;
+    }catch(e){}
+    const native=CapCore.isNativePlatform();
+    if(native){
+      try{localStorage.setItem('gj_native','1');}catch(e){}
+    }
+    return native;
+  });
   const[screen,setScreen]=useState("feed");
   const[user,setUser]=useState(null);
   const[authEmail,setAuthEmail]=useState("");
@@ -403,8 +414,6 @@ export default function App(){
   // scheme (registered in Info.plist) instead of the web origin, which used to hand the
   // link to Safari and strand the session there. Supabase's JS client defaults to the PKCE
   // flow, so the link carries a `?code=`; fall back to hash-fragment tokens just in case.
-  // Guarded with try/catch: if the native plugin isn't linked yet (pod install not run),
-  // this must not take the whole app down with it.
   useEffect(()=>{
     if(!isNative)return;
     let sub;
