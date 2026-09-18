@@ -332,7 +332,7 @@ function ProfileView({user,authEmail,setAuthEmail,authMsg,signIn,signInApple,sig
         <p style={{fontFamily:"'Inter',sans-serif",fontSize:13,color:"#6B706C",marginBottom:24}}>Save events and build your profile</p>
         <div style={{width:"100%",maxWidth:300,display:"flex",flexDirection:"column",gap:10}}>
           {isNative&&(
-            <button onClick={signInApple} style={{width:"100%",boxSizing:"border-box",background:"#000",color:"#fff",border:"none",padding:"12px 24px",fontFamily:"'Inter',sans-serif",fontSize:15,fontWeight:600,cursor:"pointer"}}>{""} Sign in with Apple</button>
+            <button onClick={signInApple} style={{width:"100%",boxSizing:"border-box",background:"#000",color:"#fff",border:"none",padding:"12px 24px",fontFamily:"'Inter',sans-serif",fontSize:15,fontWeight:600,cursor:"pointer"}}>{""} Sign in with Apple</button>
           )}
           <input value={authEmail} onChange={e=>setAuthEmail(e.target.value)} placeholder="Your email" type="email" style={{width:"100%",boxSizing:"border-box",padding:"10px 14px",border:"1px solid #D9D6CF",fontFamily:"'Inter',sans-serif",fontSize:14}}/>
           <button onClick={signIn} style={{width:"100%",boxSizing:"border-box",background:"#2F5D50",color:"white",border:"none",padding:"10px 24px",fontFamily:"'Inter',sans-serif",fontSize:14,fontWeight:600,cursor:"pointer"}}>Send Sign-In Link</button>
@@ -368,13 +368,18 @@ export default function App(){
   // sign-in/out cycle. Once we've correctly detected "native" on an ordinary launch
   // (before any deep link is ever involved), that fact can never become untrue for this
   // installed app, so persist it and trust the saved answer over any later live check.
+  // TEMP DEBUG: logging every branch here so we can see, via Safari Web Inspector,
+  // exactly which path this device takes on each launch instead of guessing.
   const[isNative]=useState(()=>{
     try{
-      if(localStorage.getItem('gj_native')==='1')return true;
-    }catch(e){}
+      const stored=localStorage.getItem('gj_native');
+      console.log('[gj-debug] isNative init: localStorage gj_native =',stored);
+      if(stored==='1')return true;
+    }catch(e){console.log('[gj-debug] isNative init: localStorage read threw',e);}
     const native=CapCore.isNativePlatform();
+    console.log('[gj-debug] isNative init: CapCore.isNativePlatform() live check =',native);
     if(native){
-      try{localStorage.setItem('gj_native','1');}catch(e){}
+      try{localStorage.setItem('gj_native','1');console.log('[gj-debug] isNative init: persisted gj_native=1');}catch(e){console.log('[gj-debug] isNative init: localStorage write threw',e);}
     }
     return native;
   });
@@ -415,10 +420,12 @@ export default function App(){
   // link to Safari and strand the session there. Supabase's JS client defaults to the PKCE
   // flow, so the link carries a `?code=`; fall back to hash-fragment tokens just in case.
   useEffect(()=>{
+    console.log('[gj-debug] appUrlOpen effect running, isNative =',isNative);
     if(!isNative)return;
     let sub;
     try{
       sub=CapApp.addListener('appUrlOpen',async({url})=>{
+        console.log('[gj-debug] appUrlOpen fired, url =',url);
         if(!url||!url.startsWith('gojaney://login-callback'))return;
         try{
           const parsed=new URL(url);
@@ -447,6 +454,7 @@ export default function App(){
     if(!authEmail){setAuthMsg("Enter your email");return;}
     setAuthMsg("Sending...");
     const redirectTo=isNative?'gojaney://login-callback':window.location.origin;
+    console.log('[gj-debug] signIn: isNative =',isNative,' redirectTo =',redirectTo);
     const{error}=await supabase.auth.signInWithOtp({email:authEmail,options:{emailRedirectTo:redirectTo}});
     if(error)setAuthMsg(error.message);
     else setAuthMsg("Check your email for a sign-in link!");
