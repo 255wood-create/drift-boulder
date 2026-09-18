@@ -1,8 +1,45 @@
-# go janey. — Project Handoff (Updated September 16, 2026)
+# go janey. — Project Handoff (Updated September 18, 2026)
 
 > **This supersedes all older copies.** Several stale versions exist on the MacBook and in
 > `~/Downloads/` (numbered copies from repeated downloads). Save this over
 > `~/drift-boulder/CLAUDE-CODE-HANDOFF.md` and delete the rest.
+
+## Sept 18 session — what changed
+- **Two real sign-in bugs found and fixed, confirmed working live on Lindsay's iPhone:**
+  1. **Email sign-in link opened the website instead of the app.** Root cause: Supabase
+     project **"gojaney"** (there are two Supabase projects on this account — the other,
+     "255wood@gmail.com's Project," is an unused default and should be ignored; the real one
+     is confirmed by its Project URL matching `lknoxozdbkikysxoarzu.supabase.co`) never had
+     `gojaney://login-callback` in **Authentication → URL Configuration → Redirect URLs**.
+     Without it, Supabase silently ignored `signInWithOtp`'s `emailRedirectTo` and fell back
+     to the Site URL (`https://gojaney.com`), so the emailed link always opened Safari.
+     **Fixed by adding `gojaney://login-callback` to that Redirect URLs list.** This is a
+     **dashboard setting, not app code** — it took effect immediately for the app already
+     installed on the test phone, no new build required for this part alone.
+  2. **"Sign in with Apple" button disappeared from the sign-in screen after signing in with
+     email and then signing out** — never after signing in with Apple. Suspected cause:
+     `CapCore.isNativePlatform()` racing the native bridge on the WebView reload that the
+     `gojaney://` deep-link hand-off triggers, occasionally reading `false` on that one reload.
+     Fixed by persisting the native-platform flag to `localStorage` (key `gj_native`) the first
+     time it's correctly read `true` on an ordinary launch, and trusting that saved value on
+     every later check instead of re-querying live. Code is in the SIGN IN WITH APPLE section
+     below.
+  - Both fixes were confirmed with temporary `console.log` debug statements first (removed
+    once verified), and by connecting Safari's Web Inspector to the device.
+- **Sign-in screen redesigned** to one combined layout, per Lindsay's explicit choice: Apple
+  button, email field, and "Send Sign-In Link" button all visible at once. No two-step chooser
+  screen, no "or use email" divider text above the button, no Back link.
+- **Confusing App Store Connect build history sorted out — read this before archiving again.**
+  See the updated iOS section below. Short version: **version 1.0.6 (build 12), containing
+  everything above, was submitted for review Sept 18.** Two earlier attempts that day and the
+  day before (version 1.0.5, builds 11 and 12) both show **"Upload failed" in Xcode's own
+  Organizer**, yet App Store Connect's website showed build 11 as **"Ready to Distribute"**
+  regardless — almost certainly a stale/incorrect Xcode status rather than a real successful
+  re-upload through some other route, since only Xcode's Distribute App was ever used. Version
+  **1.0.5 was already "previously approved"** by the time of these attempts (Apple rejected
+  new 1.0.5 uploads for exactly that reason), meaning **it's worth checking directly in App
+  Store Connect what version is actually live right now** before assuming 1.0.6 is the first
+  fix real users will see.
 
 ## Sept 16 session — what changed
 - **Found a real barrier to adoption:** App Store users can install the app but **cannot sign
@@ -375,9 +412,11 @@ flow, that shouldn't matter, but a calendar reminder is cheap insurance.
     Swapping them breaks sign-in. On first sign-in it saves Apple's name via
     `updateUser({data:{full_name}})`. A cancelled popup clears the message silently.
   - Profile screen shows a black "Sign in with Apple" button **only when
-    `CapCore.isNativePlatform()`** — the website is unchanged and keeps the email link.
-    The email link still shows in the app below "or use email" (it doesn't work in the app;
-    consider hiding the email form on native).
+    `CapCore.isNativePlatform()`** (now read through the `isNative` persisted flag — see
+    Sept 18 below). Email sign-in is **also always shown**, deliberately — Lindsay wants both
+    options available since some users prefer signing in with email over Apple. As of Sept 18
+    the email link works correctly in the native app too (see below); this paragraph is
+    superseded, kept for history.
 - Added via `add_apple_signin.py` (backup at `/tmp/App.jsx.before-apple`, gone after reboot).
 
 **Gotcha — black Profile screen.** `ProfileView` (line ~325) is a separate component that
@@ -393,9 +432,79 @@ function used inside `ProfileView` must be passed in both places.
 was invalid (Release signing showed two red errors). Fixed by Edit → Save → Download → double-click
 on developer.apple.com, then re-selecting it in Xcode. Any future capability change needs the same.
 
+### Email sign-in in the app — FIXED (Sept 18)
+Two separate, unrelated bugs were stacked on top of each other here. Fixing the code alone
+did not fix the symptom; the Supabase dashboard setting had to change too.
+
+**Bug 1 — email link opened Safari instead of the app.** `Info.plist` registers a custom URL
+scheme:
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+  <dict>
+    <key>CFBundleURLSchemes</key>
+    <array><string>gojaney</string></array>
+  </dict>
+</array>
+```
+and `signIn()` in `App.jsx` already computed `emailRedirectTo` correctly:
+```js
+const redirectTo = isNative ? 'gojaney://login-callback' : window.location.origin;
+```
+That should have been enough. It wasn't, because **Supabase only honors `emailRedirectTo` if
+the URL is on its allow list** — Authentication → URL Configuration → Redirect URLs in the
+Supabase dashboard (the **"gojaney"** project, not the other empty one on this account). That
+list held only `https://` URLs; `gojaney://login-callback` was never added, so Supabase quietly
+substituted the Site URL (`https://gojaney.com`) instead, and the emailed link always pointed
+at the website. **Fixed by adding `gojaney://login-callback` to that Redirect URLs list.** No
+app code changed for this part — it's a server-side setting and took effect immediately.
+
+An `appUrlOpen` listener in `App.jsx` catches the return trip and completes sign-in:
+```js
+useEffect(()=>{
+  if(!isNative)return;
+  const sub=CapApp.addListener('appUrlOpen',async({url})=>{
+    if(!url||!url.startsWith('gojaney://login-callback'))return;
+    const parsed=new URL(url);
+    const code=parsed.searchParams.get('code');
+    if(code){ await supabase.auth.exchangeCodeForSession(code); return; }
+    // hash-fragment token fallback, in case Supabase ever isn't on the PKCE flow
+    const params=new URLSearchParams(parsed.hash.replace(/^#/,''));
+    const access_token=params.get('access_token'), refresh_token=params.get('refresh_token');
+    if(access_token&&refresh_token) await supabase.auth.setSession({access_token,refresh_token});
+  });
+  return()=>{sub.then(s=>s.remove());};
+},[]);
+```
+
+**Bug 2 — "Sign in with Apple" button vanished after an email sign-in/out cycle,** but never
+after an Apple sign-in/out cycle. Cause: the `gojaney://` deep-link hand-off (email flow only)
+appears to reload the WebView, and `CapCore.isNativePlatform()` can lose its race with the
+native bridge on that particular reload and read `false` — even though an ordinary app launch
+reads it correctly. Fixed by caching the answer permanently once it's correctly read `true`:
+```js
+const[isNative]=useState(()=>{
+  try{
+    if(localStorage.getItem('gj_native')==='1')return true;
+  }catch(e){}
+  const native=CapCore.isNativePlatform();
+  if(native){
+    try{localStorage.setItem('gj_native','1');}catch(e){}
+  }
+  return native;
+});
+```
+`isNative` (not a live `CapCore.isNativePlatform()` call) now gates the Apple button, the
+`appUrlOpen` listener, and the `emailRedirectTo` choice in `signIn()`.
+
+**If email sign-in ever breaks again after a Supabase project change or a bundle ID / URL
+scheme change:** check the Redirect URLs allow list first, before touching any app code. It's
+easy to fix the code correctly and still see the bug, because Supabase fails silently rather
+than erroring when a redirect URL isn't allow-listed.
+
 ### Still worth doing
 - **In-app account deletion.** Apple requires it for apps with account creation (guideline
-  5.1.1(v)). Not present yet — if review rejects 1.0.4 for this, add a "Delete account" button.
+  5.1.1(v)). Not present yet — if review rejects a build for this, add a "Delete account" button.
 - Revisit "Allow users without an email" in Supabase (see above).
 - Calendar reminder for the 6-month Apple secret expiry (web flow only; not currently used).
 
@@ -622,15 +731,20 @@ denver, aurora, lakewood, littleton, englewood, thornton, arvada, westminster
 # NEXT STEPS
 
 ## Immediate
-1. **1.0.4 (build 10) SUBMITTED Sept 16, 11:11 PM** — Waiting for Review. Watch for Apple's email.
-   After release, confirm an App Store user can sign in with Apple. If Apple rejects for missing
-   account deletion, add a "Delete account" option to Profile.
-2. **LLC → Organization conversion.** D-U-N-S **149934013** submitted to Apple Developer Support;
+1. **Confirm what version is actually live on the App Store right now.** The Xcode archive
+   history alone doesn't make this clear — see the Sept 18 build-history note above. Check
+   App Store Connect directly.
+2. **1.0.6 (build 12) SUBMITTED Sept 18** — Waiting for Review. Watch for Apple's email. Once
+   released, confirm on a real device that the email sign-in link opens the app (not Safari)
+   and that the Apple button survives an email sign-in/out cycle — see the Sept 18 section
+   above for exactly what to test.
+3. **LLC → Organization conversion.** D-U-N-S **149934013** submitted to Apple Developer Support;
    awaiting reply. Check the case thread and email.
-3. Watch a `fetch3.js` run and confirm new events get sensible venues, dates, and categories.
+4. Watch a `fetch3.js` run and confirm new events get sensible venues, dates, and categories.
 
-**iOS:** 1.0.1–1.0.3 approved and released. **1.0.4 (build 10) uploaded Sept 16** with Sign in
-with Apple.
+**iOS:** 1.0.1–1.0.4 archived/submitted through Sept 16. Version 1.0.5 was approved at some
+point after that through a route not fully documented here — see the Sept 18 build-history
+note. **1.0.6 (build 12) submitted Sept 18** with the sign-in fixes.
 
 ## Sept 7 session — what changed
 - **Parser year inference.** `parseEventDate()` now checks whether the parsed date lands
@@ -901,6 +1015,46 @@ Every line must end `= 1.0.4;` / `= 10;` with no quotes or spaces. **Run that gr
 archive.** Archive needs **Any iOS Device (arm64)** selected, not the iPhone.
 
 **Uncommitted:** the version bump in `project.pbxproj` was made after commit `db7756e`.
+
+### 1.0.5 (builds 11 and 12) — attempted Sept 17 and Sept 18, both "Upload failed" in Xcode
+Build 11 was archived Sept 17 at 6:01pm; build 12 (same version, next build number) was
+archived Sept 18. **Both show "Upload failed" as their status in Xcode's Organizer window.**
+Trying to distribute either one produces:
+```
+This bundle is invalid. The value for key CFBundleShortVersionString [1.0.5] in the
+Info.plist file must contain a higher version than that of the previously approved
+version [1.0.5].
+
+Invalid Pre-Release Train. The train version '1.0.5' is closed for new build submissions
+```
+i.e. version 1.0.5 had **already been approved** by Apple by the time these were attempted —
+meaning a 1.0.5 release must have gone out between Sept 16 and Sept 17/18 through some route
+not captured in this document. **Worth confirming directly in App Store Connect what version
+is currently live**, rather than assuming from the Xcode archive list alone.
+
+**Confusing wrinkle:** despite Xcode showing build 11 as "Upload failed," App Store Connect's
+own website showed that same build as **"Ready to Distribute."** Only Xcode's Distribute App
+button was ever used to upload it — no Transporter, no command-line tool — so the most likely
+explanation is a stale/incorrect Xcode status (the bits made it to Apple's servers, but
+Xcode's own confirmation step failed or timed out locally). Since 1.0.5 was already approved,
+build 11 **cannot** be attached to a new public release anyway — it would only be usable for
+TestFlight testing, and wasn't used for that either. Safe to ignore; nothing was lost, since
+whatever code correction build 11 carried is also in build 12/1.0.6 (see below) — both come
+from the same continuously-updated `App.jsx`, and 1.0.6 was built from a fresh `git pull`
+right before archiving.
+
+### 1.0.6 (build 12) — submitted Sept 18
+Carries the Sept 18 sign-in fixes above (Apple + email both working, including after an
+email sign-in/out cycle) plus the redesigned sign-in screen. Version bumped straight to
+1.0.6 to clear the 1.0.5 conflict with headroom.
+
+**What's New submitted:** "Improved sign-in: fixed an issue where the email sign-in link
+would open in a web browser instead of the app. Also fixed an issue where the Apple Sign In
+option could disappear after signing in with email. General bug fixes and improvements."
+
+**Status as of Sept 18:** submitted for review, awaiting Apple. Once released, confirm on a
+real device that (a) the email link opens the app not Safari, and (b) the Apple button is
+still present after an email sign-in/out cycle — both were the exact bugs this build fixes.
 
 ## Instagram — started Sept 14
 
