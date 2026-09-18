@@ -405,29 +405,35 @@ export default function App(){
   // scheme (registered in Info.plist) instead of the web origin, which used to hand the
   // link to Safari and strand the session there. Supabase's JS client defaults to the PKCE
   // flow, so the link carries a `?code=`; fall back to hash-fragment tokens just in case.
+  // Guarded with try/catch: if the native plugin isn't linked yet (pod install not run),
+  // this must not take the whole app down with it.
   useEffect(()=>{
     if(!CapCore.isNativePlatform())return;
-    const sub=CapApp.addListener('appUrlOpen',async({url})=>{
-      if(!url||!url.startsWith('gojaney://login-callback'))return;
-      try{
-        const parsed=new URL(url);
-        const code=parsed.searchParams.get('code');
-        if(code){
-          const{error}=await supabase.auth.exchangeCodeForSession(code);
-          if(error)console.error("sign-in link exchange failed",error);
-          return;
-        }
-        const hash=parsed.hash.startsWith('#')?parsed.hash.slice(1):parsed.hash;
-        const params=new URLSearchParams(hash);
-        const access_token=params.get('access_token');
-        const refresh_token=params.get('refresh_token');
-        if(access_token&&refresh_token){
-          const{error}=await supabase.auth.setSession({access_token,refresh_token});
-          if(error)console.error("sign-in link session failed",error);
-        }
-      }catch(e){console.error("sign-in link handling failed",e);}
-    });
-    return()=>{sub.then(s=>s.remove());};
+    let sub;
+    try{
+      sub=CapApp.addListener('appUrlOpen',async({url})=>{
+        if(!url||!url.startsWith('gojaney://login-callback'))return;
+        try{
+          const parsed=new URL(url);
+          const code=parsed.searchParams.get('code');
+          if(code){
+            const{error}=await supabase.auth.exchangeCodeForSession(code);
+            if(error)console.error("sign-in link exchange failed",error);
+            return;
+          }
+          const hash=parsed.hash.startsWith('#')?parsed.hash.slice(1):parsed.hash;
+          const params=new URLSearchParams(hash);
+          const access_token=params.get('access_token');
+          const refresh_token=params.get('refresh_token');
+          if(access_token&&refresh_token){
+            const{error}=await supabase.auth.setSession({access_token,refresh_token});
+            if(error)console.error("sign-in link session failed",error);
+          }
+        }catch(e){console.error("sign-in link handling failed",e);}
+      });
+      sub.catch(e=>console.error("appUrlOpen listener registration failed",e));
+    }catch(e){console.error("appUrlOpen listener registration failed",e);}
+    return()=>{if(sub)sub.then(s=>s.remove()).catch(()=>{});};
   },[]);
 
   const signIn=async()=>{
