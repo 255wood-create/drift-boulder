@@ -1,5 +1,6 @@
 import { SignInWithApple } from '@capacitor-community/apple-sign-in';
 import { Capacitor as CapCore } from '@capacitor/core';
+import { App as CapApp } from '@capacitor/app';
 import { useState, useEffect, useCallback, useRef } from "react";
 import { createClient } from '@supabase/supabase-js';
 import { LocalNotifications } from '@capacitor/local-notifications';
@@ -143,7 +144,7 @@ function SaveBtn({saved,onToggle}){
 
 function EventCard({event,saved,interested,onSave,onInterest,index,timeBucket}){
   const meta=CAT_META[event.cat||event.category]||CAT_META.community;
-  var timeStr="";if(event.starts_at){var d=new Date(event.starts_at);var uh=d.getUTCHours();var um=d.getUTCMinutes();var dd=denverDay(d);if(dd){var dp=dd.split("-");timeStr=parseInt(dp[1],10)+"/"+parseInt(dp[2],10);}if(event.groupDates&&event.groupDates.length>1){var more=event.groupDates.slice(1,4).map(function(s){var g=denverDay(new Date(s));if(!g)return null;var gp=g.split("-");return parseInt(gp[1],10)+"/"+parseInt(gp[2],10);}).filter(Boolean);if(more.length)timeStr+=", "+more.join(", ");var extra=event.groupDates.length-4;if(extra>0)timeStr+=" +"+extra+" more";}if(dd&&(!event.groupDates||event.groupSameTime)&&!(um===0&&(uh===0||uh===6||uh===7))){var dt=new Intl.DateTimeFormat("en-US",{timeZone:"America/Denver",hour:"numeric",minute:"2-digit",hour12:true}).format(d);timeStr+=" \u00b7 "+dt;if(event.ends_at){var ed=new Date(event.ends_at);if(!isNaN(ed.getTime())){var et=new Intl.DateTimeFormat("en-US",{timeZone:"America/Denver",hour:"numeric",minute:"2-digit",hour12:true}).format(ed);timeStr+=" \u2013 "+et;}}}}
+  var timeStr="";if(event.starts_at){var d=new Date(event.starts_at);var uh=d.getUTCHours();var um=d.getUTCMinutes();var dd=denverDay(d);if(dd){var dp=dd.split("-");timeStr=parseInt(dp[1],10)+"/"+parseInt(dp[2],10);}if(event.groupDates&&event.groupDates.length>1){var more=event.groupDates.slice(1,4).map(function(s){var g=denverDay(new Date(s));if(!g)return null;var gp=g.split("-");return parseInt(gp[1],10)+"/"+parseInt(gp[2],10);}).filter(Boolean);if(more.length)timeStr+=", "+more.join(", ");var extra=event.groupDates.length-4;if(extra>0)timeStr+=" +"+extra+" more";}if(dd&&(!event.groupDates||event.groupSameTime)&&!(um===0&&(uh===0||uh===6||uh===7))){var dt=new Intl.DateTimeFormat("en-US",{timeZone:"America/Denver",hour:"numeric",minute:"2-digit",hour12:true}).format(d);timeStr+=" · "+dt;if(event.ends_at){var ed=new Date(event.ends_at);if(!isNaN(ed.getTime())){var et=new Intl.DateTimeFormat("en-US",{timeZone:"America/Denver",hour:"numeric",minute:"2-digit",hour12:true}).format(ed);timeStr+=" – "+et;}}}}
   return(
     <div style={{padding:"12px 0",borderBottom:"0.5px solid #E8E4DF",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
       <div style={{width:26,flexShrink:0}}/>
@@ -152,7 +153,7 @@ function EventCard({event,saved,interested,onSave,onInterest,index,timeBucket}){
         {event.vibe&&<div style={{fontFamily:"Caveat,cursive",fontWeight:400,fontSize:15,color:"#AEB3AF",marginTop:1,lineHeight:1.2}}>{event.vibe}</div>}
         <div style={{fontFamily:"Inter,sans-serif",fontSize:13,color:"#6B706C",marginTop:2}}>{event.location}{timeStr?" · "+timeStr:""}</div>
       </div>
-      <button onClick={e=>{e.stopPropagation();onSave();}} style={{background:"none",border:"none",cursor:"pointer",fontSize:18,opacity:saved?1:0.3,flexShrink:0,width:26,padding:4}}>{saved?"\u2764":"\u2661"}</button>
+      <button onClick={e=>{e.stopPropagation();onSave();}} style={{background:"none",border:"none",cursor:"pointer",fontSize:18,opacity:saved?1:0.3,flexShrink:0,width:26,padding:4}}>{saved?"❤":"♡"}</button>
     </div>
   );
 }
@@ -325,14 +326,25 @@ function SavedView({events,saved,interested,onSave,onInterest}){
 function ProfileView({user,authEmail,setAuthEmail,authMsg,signIn,signInApple,signOut,saved,events}){
   if(!user){
     return(
-      <div style={{flex:1,padding:"60px 20px",textAlign:"center"}}>
+      <div style={{flex:1,padding:"60px 20px",display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center"}}>
         <div style={{fontSize:40,marginBottom:14}}>&#x1F464;</div>
         <h2 style={{fontFamily:"'Inter',sans-serif",fontSize:20,fontWeight:600,color:"#1F2320",marginBottom:8}}>Sign in to go janey.</h2>
-        <p style={{fontFamily:"'Inter',sans-serif",fontSize:13,color:"#6B706C",marginBottom:20}}>Save events and build your profile</p>
-        <input value={authEmail} onChange={e=>setAuthEmail(e.target.value)} placeholder="Your email" type="email" style={{width:"100%",maxWidth:300,padding:"10px 14px",border:"1px solid #D9D6CF",fontFamily:"'Inter',sans-serif",fontSize:14,marginBottom:10}}/>
-        <br/>
-        {CapCore.isNativePlatform()&&(<><button onClick={signInApple} style={{background:"#000",color:"#fff",border:"none",padding:"12px 24px",fontFamily:"'Inter',sans-serif",fontSize:15,fontWeight:600,cursor:"pointer",marginBottom:12,display:"block"}}>{"\uF8FF"} Sign in with Apple</button><div style={{fontSize:12,color:"#888",marginBottom:10}}>or use email</div></>)}<button onClick={signIn} style={{background:"#2F5D50",color:"white",border:"none",padding:"10px 24px",fontFamily:"'Inter',sans-serif",fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:10}}>Send Sign-In Link</button>
-        {authMsg&&<p style={{fontFamily:"'Inter',sans-serif",fontSize:13,color:authMsg.includes("Check")?"#2F5D50":"#D9A441",marginTop:8}}>{authMsg}</p>}
+        <p style={{fontFamily:"'Inter',sans-serif",fontSize:13,color:"#6B706C",marginBottom:24}}>Save events and build your profile</p>
+        <div style={{width:"100%",maxWidth:300,display:"flex",flexDirection:"column",gap:10}}>
+          {CapCore.isNativePlatform()&&(
+            <>
+              <button onClick={signInApple} style={{width:"100%",boxSizing:"border-box",background:"#000",color:"#fff",border:"none",padding:"12px 24px",fontFamily:"'Inter',sans-serif",fontSize:15,fontWeight:600,cursor:"pointer"}}>{""} Sign in with Apple</button>
+              <div style={{display:"flex",alignItems:"center",gap:10,margin:"4px 0"}}>
+                <div style={{flex:1,height:1,background:"#D9D6CF"}}/>
+                <span style={{fontSize:12,color:"#888"}}>or use email</span>
+                <div style={{flex:1,height:1,background:"#D9D6CF"}}/>
+              </div>
+            </>
+          )}
+          <input value={authEmail} onChange={e=>setAuthEmail(e.target.value)} placeholder="Your email" type="email" style={{width:"100%",boxSizing:"border-box",padding:"10px 14px",border:"1px solid #D9D6CF",fontFamily:"'Inter',sans-serif",fontSize:14}}/>
+          <button onClick={signIn} style={{width:"100%",boxSizing:"border-box",background:"#2F5D50",color:"white",border:"none",padding:"10px 24px",fontFamily:"'Inter',sans-serif",fontSize:14,fontWeight:600,cursor:"pointer"}}>Send Sign-In Link</button>
+        </div>
+        {authMsg&&<p style={{fontFamily:"'Inter',sans-serif",fontSize:13,color:authMsg.includes("Check")?"#2F5D50":"#D9A441",marginTop:14}}>{authMsg}</p>}
         <a href="/submit.html" style={{display:"block",marginTop:28,fontFamily:"'Inter',sans-serif",fontSize:13,color:"#2F5D50",fontWeight:600,textDecoration:"none"}}>Know about an event? Submit one →</a>
       </div>
     );
@@ -389,10 +401,40 @@ export default function App(){
     return()=>subscription.unsubscribe();
   },[]);
 
+  // Native only: the magic-link email lands back in the app via the gojaney:// custom
+  // scheme (registered in Info.plist) instead of the web origin, which used to hand the
+  // link to Safari and strand the session there. Supabase's JS client defaults to the PKCE
+  // flow, so the link carries a `?code=`; fall back to hash-fragment tokens just in case.
+  useEffect(()=>{
+    if(!CapCore.isNativePlatform())return;
+    const sub=CapApp.addListener('appUrlOpen',async({url})=>{
+      if(!url||!url.startsWith('gojaney://login-callback'))return;
+      try{
+        const parsed=new URL(url);
+        const code=parsed.searchParams.get('code');
+        if(code){
+          const{error}=await supabase.auth.exchangeCodeForSession(code);
+          if(error)console.error("sign-in link exchange failed",error);
+          return;
+        }
+        const hash=parsed.hash.startsWith('#')?parsed.hash.slice(1):parsed.hash;
+        const params=new URLSearchParams(hash);
+        const access_token=params.get('access_token');
+        const refresh_token=params.get('refresh_token');
+        if(access_token&&refresh_token){
+          const{error}=await supabase.auth.setSession({access_token,refresh_token});
+          if(error)console.error("sign-in link session failed",error);
+        }
+      }catch(e){console.error("sign-in link handling failed",e);}
+    });
+    return()=>{sub.then(s=>s.remove());};
+  },[]);
+
   const signIn=async()=>{
     if(!authEmail){setAuthMsg("Enter your email");return;}
     setAuthMsg("Sending...");
-    const{error}=await supabase.auth.signInWithOtp({email:authEmail,options:{emailRedirectTo:window.location.origin}});
+    const redirectTo=CapCore.isNativePlatform()?'gojaney://login-callback':window.location.origin;
+    const{error}=await supabase.auth.signInWithOtp({email:authEmail,options:{emailRedirectTo:redirectTo}});
     if(error)setAuthMsg(error.message);
     else setAuthMsg("Check your email for a sign-in link!");
   };
