@@ -62,6 +62,60 @@ happened" concern (Moms Unhinged). `refresh-buckets.js` runs only on Lindsay's M
 pasted into the session so its delete condition can be rewritten to the same midnight-Mountain-Time
 / Denver-calendar-day comparison as `denverDay()` in `src/App.jsx:61-69`.
 
+### 3. "This Weekend" bucket showing stale/wrong events — FIXED.
+Lindsay reported far-future "Upcoming" events showing under This Weekend, then separately that
+9/18 (Friday, already past) events should not appear there either — only 9/19 (Sat) and 9/20
+(Sun). Two real bugs in `src/App.jsx`, both fixed:
+- `computeBucket()` used `diff<=0` to mean "Today," which also matched any already-past date.
+  Combined with the This Weekend filter's rule that pulls in "Today"-bucketed events whenever
+  today itself is a weekend day, a stale/past event could ride along into the weekend list.
+  Changed to `diff===0` for Today, `diff<0` now routes to Upcoming.
+- Events with no `starts_at` fell back to the raw, admin-editable `time_bucket` column (set via
+  the dropdown in `admin.html`), which never expires — a dateless event tagged "This Weekend" at
+  some point in the past stayed tagged that way forever. Now always resolves to "Upcoming" for
+  dateless events, matching the documented intent above (#54 dateless events section, below).
+
+Could not query Supabase directly to find the exact rows that triggered this (this sandbox's
+network blocks `supabase.co`, same as it blocked `gojaney.com` earlier) — this was a code-level
+fix for the mechanism, not a data cleanup. If a specific event is still stuck wrong after this
+deploys, check in the admin panel whether it actually has a real `starts_at` date.
+
+### 4. Found and merged a second, orphaned branch (`claude/attach-latest-handoff-lbo1we`)
+While getting Lindsay's Mac ready to cut a new iOS build, her `git pull origin main` failed with
+"divergent branches." Turned out her Mac's local `main` had been reset at some point to the tip of
+`claude/attach-latest-handoff-lbo1we` — a **separate, previously unmerged branch** (pushed to
+GitHub, but never merged into `main`) containing the real Sept 18 sign-in-fix commits (the
+`gojaney://` deep link, `@capacitor/app` dependency, Apple sign-in button persistence, the
+redesigned sign-in screen). Meanwhile `origin/main` only had this session's DNS/event-timing/
+bucket-fix branch. Two genuinely different, non-overlapping sets of work, each missing the other.
+
+**Merged both branches together on both repos** (drift-app and drift-boulder), pushed to `main`.
+One real conflict in `src/App.jsx`'s sign-in screen (`ProfileView`), resolved in favor of the
+already-fixed version (persisted `isNative` flag instead of calling `CapCore.isNativePlatform()`
+live; no "or use email" divider). `Info.plist`, `package.json`, `lib/eventSearch.js`,
+`public/admin.html`, and this handoff doc all merged cleanly. Verified both repos build with no
+errors after merging.
+
+**Lesson for next time:** before assuming a `git pull` will be a clean fast-forward, check
+`git status` first — "divergent branches" almost always means there's unmerged work sitting on
+some other branch that needs to be found and reconciled, not just a stale local checkout.
+
+**iOS build status as of this session:** rebuilt and re-synced on Lindsay's Mac after the merge
+(confirmed `@capacitor/app` picked up by `cap sync`), bumped to **version 1.0.7, build 13**,
+archived and **uploaded to App Store Connect** — containing all of today's web fixes plus the
+sign-in fixes. **Deliberately not yet submitted for review** — 1.0.6 (build 12) is still "Waiting
+for Review," and the handoff already has one prior note about confusion from overlapping
+submissions (stale Xcode upload statuses, a build rejected because a prior version was already
+approved). Plan: wait for 1.0.6 to clear (approved/released or rejected), then submit 1.0.7/build
+13 for review as its own version rather than reusing 1.0.6.
+
+**Two untracked, unidentified files found on Lindsay's Mac, left alone:** `public/admin-backup.html`
+and `t.mjs` in `~/drift-boulder`. Not in git, not matched to anything in the known scripts table
+below. Lindsay's guess was they might relate to subscriber event submissions, but that flow is
+`public/submit.html` + the `submissions` table already handled in `admin.html` — these two don't
+obviously fit that. Worth a `cat` on both next session to identify and decide whether to keep,
+gitignore, or delete.
+
 ## Sept 18 session — what changed
 - **Two real sign-in bugs found and fixed, confirmed working live on Lindsay's iPhone:**
   1. **Email sign-in link opened the website instead of the app.** Root cause: Supabase
