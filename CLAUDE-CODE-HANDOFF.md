@@ -106,8 +106,29 @@ archived and **uploaded to App Store Connect** — containing all of today's web
 sign-in fixes. **Deliberately not yet submitted for review** — 1.0.6 (build 12) is still "Waiting
 for Review," and the handoff already has one prior note about confusion from overlapping
 submissions (stale Xcode upload statuses, a build rejected because a prior version was already
-approved). Plan: wait for 1.0.6 to clear (approved/released or rejected), then submit 1.0.7/build
-13 for review as its own version rather than reusing 1.0.6.
+approved). Plan: wait for 1.0.6 to clear (approved/released or rejected), then submit for review
+as its own version rather than reusing 1.0.6 — see build number note below, since it's no longer
+build 13.
+
+### 5. "This Weekend" pulling in *next* weekend's events on Saturday/Sunday — FIXED.
+Found after 1.0.7/build 13 was already uploaded, from a screenshot of the live app on a Saturday:
+"This Weekend" showed ~34 events, nearly all dated the *following* Friday/Saturday (9/25, 9/26,
+a week out), with only one event actually on 9/20. These had real `starts_at` dates — not the
+dateless/stale-`time_bucket` issue from earlier, a genuinely different bug in the date math itself.
+
+Root cause in `computeBucket()` (`src/App.jsx`): `daysToFriday=(5-dow+7)%7` always looks for the
+*next* Friday relative to today. When today is itself Saturday or Sunday, that formula lands on
+6 or 5 days out instead of recognizing the current weekend is already underway (and already fully
+covered by the `diff===0`/`diff===1` Today/Tomorrow checks above it) — so it was quietly
+computing *next* weekend's window and mislabeling those events "This Weekend" too. Friday is
+unaffected: the same formula happens to evaluate to 0 that day, correctly extending through
+Sunday. Fixed by skipping the window check entirely when `dow===6||dow===0`.
+
+**Not in build 13** — found and fixed after that upload. **Lindsay's plan:** fold this fix into
+the same 1.0.7 release before submitting for review, so it isn't shipped a fix behind. Since
+Apple rejects re-uploading an identical version+build number, this requires bumping to
+**build 14** (version stays 1.0.7) rather than replacing build 13 in place — rebuild, re-sync,
+re-archive, re-upload, and submit build 14 (not 13) when the time comes.
 
 **Two untracked, unidentified files found on Lindsay's Mac, left alone:** `public/admin-backup.html`
 and `t.mjs` in `~/drift-boulder`. Not in git, not matched to anything in the known scripts table
