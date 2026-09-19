@@ -6,47 +6,61 @@
 
 ## Sept 19 session — what changed, and what's next
 Lindsay reported two problems: the site's DNS host got switched away from Vercel, and today's
-events still weren't showing up. Session ended before either was fully fixed — **pick up here.**
+events had disappeared from the **app** the night before (~9-10pm Sept 18). **Both root causes
+found; DNS is fixed and confirmed live. The app fix is written but still waiting on Apple.**
 
-### 1. DNS — Network Solutions overwrote the Vercel records. NOT YET FIXED.
-Confirmed via a Vercel dashboard screenshot: `gojaney.com` (root) shows **"DNS Change
-Recommended"** and `www.gojaney.com` shows **"Invalid Configuration."** Network Solutions is the
-registrar and appears to have replaced the DNS records Vercel needs (likely a parking-page
-default set when Network Solutions took over as host). Only `drift-boulder-now.vercel.app` (the
-raw Vercel domain, not the custom domain) currently shows valid.
+### 1. DNS — FIXED and confirmed live.
+Network Solutions had a leftover `www` **A record** (`74.91.138.137`, their own "Starter
+(Hosting-Unix)" package IP) instead of pointing at Vercel — that's what made
+`www.gojaney.com` show "Invalid Configuration" in Vercel. The root `@` A record
+(`76.76.21.21`) was already fine (Vercel's legacy IP).
 
-**Fix — set these records at Network Solutions' DNS management for `gojaney.com`:**
-| Type | Host | Value |
-|---|---|---|
-| A | `@` (root) | `216.150.1.1` |
-| CNAME | `www` | `00598cb056b92125.vercel-dns-016.com.` |
+**Fix applied in Network Solutions' Advanced DNS Records:**
+- Deleted the `www` A record (`74.91.138.137`)
+- Added `www` CNAME → `00598cb056b92125.vercel-dns-016.com`
 
-Legacy values also still work if Network Solutions rejects the above: CNAME `cname.vercel-dns.com`
-or A `76.76.21.21`. Remove whatever parking-page records Network Solutions auto-added first.
-Nobody applied this yet — it needs registrar-side access Claude Code doesn't have.
+Confirmed via `whatsmydns.net` that the new CNAME is publicly resolving, and confirmed by loading
+`https://www.gojaney.com` in an incognito window that the real site loads (not the Network
+Solutions placeholder). A regular non-incognito browser may still show a stale cached page for a
+while — that's local cache, not a real problem; a hard refresh or `?fresh=1` clears it. Network
+Solutions still lists `gojaney.com`/`www.gojaney.com` as a "Domain Pointer" under that Hosting-Unix
+package (Websites & Hosting section) — harmless now that DNS points elsewhere, but worth knowing
+it's still there if something looks off later.
 
-**Also:** the Claude Code **Vercel MCP connector needs reauthentication.** Every Vercel API call
-this session returned `403 Forbidden — "Not authorized: ... scope 255wood-creates-projects ...
-must re-authenticate"`, even though Lindsay was logged into the Vercel dashboard in her browser
-(that's a separate grant from Claude's connector). Reconnect it under Claude.ai connector settings
-before next session, or dashboard screenshots will be needed again to check anything Vercel-side.
+The root `@` A record could optionally be upgraded from the legacy `76.76.21.21` to Vercel's newer
+`216.150.1.1` (Vercel dashboard shows this as "DNS Change Recommended," not urgent — legacy value
+is explicitly still supported).
 
-### 2. Today's events disappearing — display fix already shipped; real cause still open
-The **display-side** fix from the Sept 18 session (see below) is confirmed live in both repos:
-`isPastEvent()` in `src/App.jsx` and the equivalent in `public/admin.html` correctly wait for the
-Denver calendar day to change before hiding an event, not just its listed time.
+**Also:** the Claude Code **Vercel MCP connector needed reauthentication** for most of this
+session (`403 Forbidden ... scope 255wood-creates-projects ... must re-authenticate`) even though
+Lindsay was logged into the Vercel dashboard in her browser — that's a separate grant. It's since
+reconnected; if it 403s again next session, redo that reconnect under Claude.ai connector settings.
 
-But Lindsay is still seeing today's events missing, which points at the **UNRESOLVED bug from
-Sept 14** (see Known data issues below): `refresh-buckets.js` may be **deleting** rows from the
-database outright, not just mis-hiding them client-side. That script:
-- runs only on Lindsay's MacBook via cron (`0 6 * * *`), not deployed anywhere
-- is **gitignored** — it is not in either repo, so this session could not read or patch it
+### 2. Today's events disappearing from the app — root cause found and fixed on the web; iOS still pending Apple review.
+Lindsay was only looking at the **app**, not the website, when she saw "Today" empty at ~9-10pm
+Sept 18 — several of those events turned up under "Past" instead, meaning **they were never
+deleted from Supabase**, just mis-bucketed. That rules out `refresh-buckets.js` deleting rows as
+the cause of *this specific incident* (see Known data issues below — that Sept 14 concern is
+still separately unconfirmed/unresolved, just not what happened here).
 
-**Next step:** get the current contents of `~/drift-boulder/refresh-buckets.js` from the MacBook
-(paste it into the session) so its delete condition can be rewritten to use the same
-midnight-Mountain-Time / Denver-calendar-day comparison as `denverDay()` in `src/App.jsx:61-69`,
-instead of whatever it currently uses. Until that script is patched, assume it can still delete
-future events early.
+**Actual cause: the Sept 18 client-side fix to `isPastEvent()` never reached either delivery
+path.** It was committed to the `claude/jolly-faraday-odihu1` branch but:
+- **Website:** never merged into `main` (no PR was ever opened) — Vercel deploys from `main`, so
+  the live site was still running pre-fix code. **Fixed this session:** merged
+  `claude/jolly-faraday-odihu1` into `main` and pushed on both repos (drift-app `5592039`,
+  drift-boulder `153b1cd`). Vercel auto-deployed; confirmed in the Vercel dashboard that
+  Production is now serving that commit, and the deployment preview shows today's events present.
+- **iOS app:** version 1.0.6 (build 12) contains the fix but is still **"Waiting for Review"** in
+  App Store Connect as of this session. Nothing to do but wait for Apple — once approved and
+  released, the app will have the same fix the website now has. Until then, the installed app on
+  any device will keep showing the old pre-fix behavior.
+
+**Still open, unrelated to last night's incident:** the Sept 14 "event deleted before it
+happened" concern (Moms Unhinged). `refresh-buckets.js` runs only on Lindsay's MacBook via cron
+(`0 6 * * *`), is gitignored, and isn't in either repo, so it still hasn't been read or patched.
+**Next step whenever picked back up:** get the contents of `~/drift-boulder/refresh-buckets.js`
+pasted into the session so its delete condition can be rewritten to the same midnight-Mountain-Time
+/ Denver-calendar-day comparison as `denverDay()` in `src/App.jsx:61-69`.
 
 ## Sept 18 session — what changed
 - **Two real sign-in bugs found and fixed, confirmed working live on Lindsay's iPhone:**
