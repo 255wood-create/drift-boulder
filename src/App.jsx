@@ -63,13 +63,10 @@ function denverDay(d){if(!d)return null;var x=new Date(d);if(isNaN(x.getTime()))
 
 function isPastEvent(startsAt){
   if(!startsAt) return false;
-  const d=new Date(startsAt);
-  const uh=d.getUTCHours(), um=d.getUTCMinutes();
-  const isPlaceholderTime=um===0&&(uh===0||uh===6||uh===7);
-  if(isPlaceholderTime){
-    const a=denverDay(d), b=denverDay(new Date()); if(!a||!b) return false; return a < b;
-  }
-  return d<new Date();
+  const eventDay=denverDay(startsAt);
+  const todayDay=denverDay(new Date());
+  if(!eventDay||!todayDay) return false;
+  return eventDay<todayDay;
 }
 function computeBucket(startsAt){
   const todayStr=denverDay(new Date());
@@ -143,7 +140,7 @@ function SaveBtn({saved,onToggle}){
 
 function EventCard({event,saved,interested,onSave,onInterest,index,timeBucket}){
   const meta=CAT_META[event.cat||event.category]||CAT_META.community;
-  var timeStr="";if(event.starts_at){var d=new Date(event.starts_at);var uh=d.getUTCHours();var um=d.getUTCMinutes();var dd=denverDay(d);if(dd){var dp=dd.split("-");timeStr=parseInt(dp[1],10)+"/"+parseInt(dp[2],10);}if(event.groupDates&&event.groupDates.length>1){var more=event.groupDates.slice(1,4).map(function(s){var g=denverDay(new Date(s));if(!g)return null;var gp=g.split("-");return parseInt(gp[1],10)+"/"+parseInt(gp[2],10);}).filter(Boolean);if(more.length)timeStr+=", "+more.join(", ");var extra=event.groupDates.length-4;if(extra>0)timeStr+=" +"+extra+" more";}if(dd&&(!event.groupDates||event.groupSameTime)&&!(um===0&&(uh===0||uh===6||uh===7))){var dt=new Intl.DateTimeFormat("en-US",{timeZone:"America/Denver",hour:"numeric",minute:"2-digit",hour12:true}).format(d);timeStr+=" \u00b7 "+dt;if(event.ends_at){var ed=new Date(event.ends_at);if(!isNaN(ed.getTime())){var et=new Intl.DateTimeFormat("en-US",{timeZone:"America/Denver",hour:"numeric",minute:"2-digit",hour12:true}).format(ed);timeStr+=" \u2013 "+et;}}}}
+  var timeStr="";if(event.starts_at){var d=new Date(event.starts_at);var uh=d.getUTCHours();var um=d.getUTCMinutes();var dd=denverDay(d);if(dd){var dp=dd.split("-");timeStr=parseInt(dp[1],10)+"/"+parseInt(dp[2],10);}if(event.groupDates&&event.groupDates.length>1){var more=event.groupDates.slice(1,4).map(function(s){var g=denverDay(new Date(s));if(!g)return null;var gp=g.split("-");return parseInt(gp[1],10)+"/"+parseInt(gp[2],10);}).filter(Boolean);if(more.length)timeStr+=", "+more.join(", ");var extra=event.groupDates.length-4;if(extra>0)timeStr+=" +"+extra+" more";}if(dd&&(!event.groupDates||event.groupSameTime)&&!(um===0&&(uh===0||uh===6||uh===7))){var dt=new Intl.DateTimeFormat("en-US",{timeZone:"America/Denver",hour:"numeric",minute:"2-digit",hour12:true}).format(d);timeStr+=" · "+dt;if(event.ends_at){var ed=new Date(event.ends_at);if(!isNaN(ed.getTime())){var et=new Intl.DateTimeFormat("en-US",{timeZone:"America/Denver",hour:"numeric",minute:"2-digit",hour12:true}).format(ed);timeStr+=" – "+et;}}}}
   return(
     <div style={{padding:"12px 0",borderBottom:"0.5px solid #E8E4DF",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
       <div style={{width:26,flexShrink:0}}/>
@@ -152,7 +149,7 @@ function EventCard({event,saved,interested,onSave,onInterest,index,timeBucket}){
         {event.vibe&&<div style={{fontFamily:"Caveat,cursive",fontWeight:400,fontSize:15,color:"#AEB3AF",marginTop:1,lineHeight:1.2}}>{event.vibe}</div>}
         <div style={{fontFamily:"Inter,sans-serif",fontSize:13,color:"#6B706C",marginTop:2}}>{event.location}{timeStr?" · "+timeStr:""}</div>
       </div>
-      <button onClick={e=>{e.stopPropagation();onSave();}} style={{background:"none",border:"none",cursor:"pointer",fontSize:18,opacity:saved?1:0.3,flexShrink:0,width:26,padding:4}}>{saved?"\u2764":"\u2661"}</button>
+      <button onClick={e=>{e.stopPropagation();onSave();}} style={{background:"none",border:"none",cursor:"pointer",fontSize:18,opacity:saved?1:0.3,flexShrink:0,width:26,padding:4}}>{saved?"❤":"♡"}</button>
     </div>
   );
 }
@@ -331,7 +328,7 @@ function ProfileView({user,authEmail,setAuthEmail,authMsg,signIn,signInApple,sig
         <p style={{fontFamily:"'Inter',sans-serif",fontSize:13,color:"#6B706C",marginBottom:20}}>Save events and build your profile</p>
         <input value={authEmail} onChange={e=>setAuthEmail(e.target.value)} placeholder="Your email" type="email" style={{width:"100%",maxWidth:300,padding:"10px 14px",border:"1px solid #D9D6CF",fontFamily:"'Inter',sans-serif",fontSize:14,marginBottom:10}}/>
         <br/>
-        {CapCore.isNativePlatform()&&(<><button onClick={signInApple} style={{background:"#000",color:"#fff",border:"none",padding:"12px 24px",fontFamily:"'Inter',sans-serif",fontSize:15,fontWeight:600,cursor:"pointer",marginBottom:12,display:"block"}}>{"\uF8FF"} Sign in with Apple</button><div style={{fontSize:12,color:"#888",marginBottom:10}}>or use email</div></>)}<button onClick={signIn} style={{background:"#2F5D50",color:"white",border:"none",padding:"10px 24px",fontFamily:"'Inter',sans-serif",fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:10}}>Send Sign-In Link</button>
+        {CapCore.isNativePlatform()&&(<><button onClick={signInApple} style={{background:"#000",color:"#fff",border:"none",padding:"12px 24px",fontFamily:"'Inter',sans-serif",fontSize:15,fontWeight:600,cursor:"pointer",marginBottom:12,display:"block"}}>{""} Sign in with Apple</button><div style={{fontSize:12,color:"#888",marginBottom:10}}>or use email</div></>)}<button onClick={signIn} style={{background:"#2F5D50",color:"white",border:"none",padding:"10px 24px",fontFamily:"'Inter',sans-serif",fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:10}}>Send Sign-In Link</button>
         {authMsg&&<p style={{fontFamily:"'Inter',sans-serif",fontSize:13,color:authMsg.includes("Check")?"#2F5D50":"#D9A441",marginTop:8}}>{authMsg}</p>}
         <a href="/submit.html" style={{display:"block",marginTop:28,fontFamily:"'Inter',sans-serif",fontSize:13,color:"#2F5D50",fontWeight:600,textDecoration:"none"}}>Know about an event? Submit one →</a>
       </div>
