@@ -1,5 +1,6 @@
 import { SignInWithApple } from '@capacitor-community/apple-sign-in';
 import { Capacitor as CapCore } from '@capacitor/core';
+import { App as CapApp } from '@capacitor/app';
 import { useState, useEffect, useCallback, useRef } from "react";
 import { createClient } from '@supabase/supabase-js';
 import { LocalNotifications } from '@capacitor/local-notifications';
@@ -320,17 +321,21 @@ function SavedView({events,saved,interested,onSave,onInterest}){
   );
 }
 
-function ProfileView({user,authEmail,setAuthEmail,authMsg,signIn,signInApple,signOut,saved,events}){
+function ProfileView({user,authEmail,setAuthEmail,authMsg,signIn,signInApple,signOut,saved,events,isNative}){
   if(!user){
     return(
-      <div style={{flex:1,padding:"60px 20px",textAlign:"center"}}>
+      <div style={{flex:1,padding:"60px 20px",display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center"}}>
         <div style={{fontSize:40,marginBottom:14}}>&#x1F464;</div>
         <h2 style={{fontFamily:"'Inter',sans-serif",fontSize:20,fontWeight:600,color:"#1F2320",marginBottom:8}}>Sign in to go janey.</h2>
-        <p style={{fontFamily:"'Inter',sans-serif",fontSize:13,color:"#6B706C",marginBottom:20}}>Save events and build your profile</p>
-        <input value={authEmail} onChange={e=>setAuthEmail(e.target.value)} placeholder="Your email" type="email" style={{width:"100%",maxWidth:300,padding:"10px 14px",border:"1px solid #D9D6CF",fontFamily:"'Inter',sans-serif",fontSize:14,marginBottom:10}}/>
-        <br/>
-        {CapCore.isNativePlatform()&&(<><button onClick={signInApple} style={{background:"#000",color:"#fff",border:"none",padding:"12px 24px",fontFamily:"'Inter',sans-serif",fontSize:15,fontWeight:600,cursor:"pointer",marginBottom:12,display:"block"}}>{""} Sign in with Apple</button><div style={{fontSize:12,color:"#888",marginBottom:10}}>or use email</div></>)}<button onClick={signIn} style={{background:"#2F5D50",color:"white",border:"none",padding:"10px 24px",fontFamily:"'Inter',sans-serif",fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:10}}>Send Sign-In Link</button>
-        {authMsg&&<p style={{fontFamily:"'Inter',sans-serif",fontSize:13,color:authMsg.includes("Check")?"#2F5D50":"#D9A441",marginTop:8}}>{authMsg}</p>}
+        <p style={{fontFamily:"'Inter',sans-serif",fontSize:13,color:"#6B706C",marginBottom:24}}>Save events and build your profile</p>
+        <div style={{width:"100%",maxWidth:300,display:"flex",flexDirection:"column",gap:10}}>
+          {isNative&&(
+            <button onClick={signInApple} style={{width:"100%",boxSizing:"border-box",background:"#000",color:"#fff",border:"none",padding:"12px 24px",fontFamily:"'Inter',sans-serif",fontSize:15,fontWeight:600,cursor:"pointer"}}>{""} Sign in with Apple</button>
+          )}
+          <input value={authEmail} onChange={e=>setAuthEmail(e.target.value)} placeholder="Your email" type="email" style={{width:"100%",boxSizing:"border-box",padding:"10px 14px",border:"1px solid #D9D6CF",fontFamily:"'Inter',sans-serif",fontSize:14}}/>
+          <button onClick={signIn} style={{width:"100%",boxSizing:"border-box",background:"#2F5D50",color:"white",border:"none",padding:"10px 24px",fontFamily:"'Inter',sans-serif",fontSize:14,fontWeight:600,cursor:"pointer"}}>Send Sign-In Link</button>
+        </div>
+        {authMsg&&<p style={{fontFamily:"'Inter',sans-serif",fontSize:13,color:authMsg.includes("Check")?"#2F5D50":"#D9A441",marginTop:14}}>{authMsg}</p>}
         <a href="/submit.html" style={{display:"block",marginTop:28,fontFamily:"'Inter',sans-serif",fontSize:13,color:"#2F5D50",fontWeight:600,textDecoration:"none"}}>Know about an event? Submit one →</a>
       </div>
     );
@@ -355,6 +360,22 @@ function ProfileView({user,authEmail,setAuthEmail,authMsg,signIn,signInApple,sig
 }
 
 export default function App(){
+  // The gojaney:// deep-link hand-off (email sign-in only) appears to cause a full page
+  // reload of the WebView, and isNativePlatform() can race with the native bridge and
+  // read false on that particular reload -- hiding the Apple button after an email
+  // sign-in/out cycle. Once we've correctly detected "native" on an ordinary launch
+  // (before any deep link is ever involved), that fact can never become untrue for this
+  // installed app, so persist it and trust the saved answer over any later live check.
+  const[isNative]=useState(()=>{
+    try{
+      if(localStorage.getItem('gj_native')==='1')return true;
+    }catch(e){}
+    const native=CapCore.isNativePlatform();
+    if(native){
+      try{localStorage.setItem('gj_native','1');}catch(e){}
+    }
+    return native;
+  });
   const[screen,setScreen]=useState("feed");
   const[user,setUser]=useState(null);
   const[authEmail,setAuthEmail]=useState("");
@@ -387,10 +408,44 @@ export default function App(){
     return()=>subscription.unsubscribe();
   },[]);
 
+  // Native only: the magic-link email lands back in the app via the gojaney:// custom
+  // scheme (registered in Info.plist) instead of the web origin, which used to hand the
+  // link to Safari and strand the session there. Supabase's JS client defaults to the PKCE
+  // flow, so the link carries a `?code=`; fall back to hash-fragment tokens just in case.
+  useEffect(()=>{
+    if(!isNative)return;
+    let sub;
+    try{
+      sub=CapApp.addListener('appUrlOpen',async({url})=>{
+        if(!url||!url.startsWith('gojaney://login-callback'))return;
+        try{
+          const parsed=new URL(url);
+          const code=parsed.searchParams.get('code');
+          if(code){
+            const{error}=await supabase.auth.exchangeCodeForSession(code);
+            if(error)console.error("sign-in link exchange failed",error);
+            return;
+          }
+          const hash=parsed.hash.startsWith('#')?parsed.hash.slice(1):parsed.hash;
+          const params=new URLSearchParams(hash);
+          const access_token=params.get('access_token');
+          const refresh_token=params.get('refresh_token');
+          if(access_token&&refresh_token){
+            const{error}=await supabase.auth.setSession({access_token,refresh_token});
+            if(error)console.error("sign-in link session failed",error);
+          }
+        }catch(e){console.error("sign-in link handling failed",e);}
+      });
+      sub.catch(e=>console.error("appUrlOpen listener registration failed",e));
+    }catch(e){console.error("appUrlOpen listener registration failed",e);}
+    return()=>{if(sub)sub.then(s=>s.remove()).catch(()=>{});};
+  },[]);
+
   const signIn=async()=>{
     if(!authEmail){setAuthMsg("Enter your email");return;}
     setAuthMsg("Sending...");
-    const{error}=await supabase.auth.signInWithOtp({email:authEmail,options:{emailRedirectTo:window.location.origin}});
+    const redirectTo=isNative?'gojaney://login-callback':window.location.origin;
+    const{error}=await supabase.auth.signInWithOtp({email:authEmail,options:{emailRedirectTo:redirectTo}});
     if(error)setAuthMsg(error.message);
     else setAuthMsg("Check your email for a sign-in link!");
   };
@@ -562,7 +617,7 @@ export default function App(){
 
         {screen==="map"&&<MapView events={displayed} allEvents={withDist} activeFilter={activeFilter} setFilter={setFilter} activeCat={activeCat} setCat={setCat} saved={saved} interested={interested} onSave={toggleSave} onInterest={toggleInt}/>}
         {screen==="saved"&&<SavedView events={withDist} saved={saved} interested={interested} onSave={toggleSave} onInterest={toggleInt}/>}
-        {screen==="profile"&&<ProfileView user={user} authEmail={authEmail} setAuthEmail={setAuthEmail} authMsg={authMsg} signIn={signIn} signInApple={signInApple} signOut={signOut} saved={saved} events={events}/>}
+        {screen==="profile"&&<ProfileView user={user} authEmail={authEmail} setAuthEmail={setAuthEmail} authMsg={authMsg} signIn={signIn} signInApple={signInApple} signOut={signOut} saved={saved} events={events} isNative={isNative}/>}
 
         <nav style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:"rgba(245,243,239,0.97)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderTop:`0.5px solid ${T.stone}`,display:"flex",flexDirection:"column",zIndex:50,padding:"10px 0 max(16px,env(safe-area-inset-bottom))"}}>
           <p style={{fontFamily:"'Inter',sans-serif",fontSize:9,color:"#7A9583",textAlign:"center",padding:"0 10px",marginBottom:8}}>Before heading out, verify date, time, locations. We're good... not perfect.</p>
