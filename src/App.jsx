@@ -78,6 +78,7 @@ function computeBucket(startsAt){
   if(diff===0) return "Today";
   if(diff===1) return "Tomorrow";
   const dow=new Date(todayStr+"T00:00:00Z").getUTCDay();
+  if(dow===6||dow===0) return "Upcoming";
   const daysToFriday=(5-dow+7)%7;
   const daysToSunday=daysToFriday+2;
   if(diff>=daysToFriday&&diff<=daysToSunday) return "This Weekend";
