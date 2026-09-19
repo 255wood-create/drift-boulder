@@ -124,11 +124,16 @@ computing *next* weekend's window and mislabeling those events "This Weekend" to
 unaffected: the same formula happens to evaluate to 0 that day, correctly extending through
 Sunday. Fixed by skipping the window check entirely when `dow===6||dow===0`.
 
-**Not in build 13** — found and fixed after that upload. **Lindsay's plan:** fold this fix into
-the same 1.0.7 release before submitting for review, so it isn't shipped a fix behind. Since
-Apple rejects re-uploading an identical version+build number, this requires bumping to
-**build 14** (version stays 1.0.7) rather than replacing build 13 in place — rebuild, re-sync,
-re-archive, re-upload, and submit build 14 (not 13) when the time comes.
+**Not in build 13** — found and fixed after that upload. **Resolved this session:** rebuilt,
+re-synced, bumped to **build 14** (version stayed 1.0.7), archived, and confirmed **"Uploaded to
+Apple"** in Xcode's Organizer. Build 13 is now superseded — harmless to leave sitting in the
+Archives/TestFlight list, no need to delete it.
+
+**Where this stands:** 1.0.6 (build 12) was still **"In Review"** in App Store Connect as of this
+session (confirmed directly on the Distribution page, not just inferred). Lindsay is waiting for
+that to clear (approved/released or rejected) before going into App Store Connect to create the
+1.0.7 submission and select **build 14** (not 13) for review. She said she'll reconnect once
+1.0.6's review finishes — nothing else is blocking in the meantime.
 
 **Two untracked, unidentified files found on Lindsay's Mac, left alone:** `public/admin-backup.html`
 and `t.mjs` in `~/drift-boulder`. Not in git, not matched to anything in the known scripts table
