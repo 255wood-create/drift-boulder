@@ -73,7 +73,8 @@ function computeBucket(startsAt){
   const eventStr=denverDay(startsAt);
   if(!eventStr||!todayStr) return "Upcoming";
   const diff=Math.round((new Date(eventStr+"T00:00:00Z")-new Date(todayStr+"T00:00:00Z"))/86400000);
-  if(diff<=0) return "Today";
+  if(diff<0) return "Upcoming";
+  if(diff===0) return "Today";
   if(diff===1) return "Tomorrow";
   const dow=new Date(todayStr+"T00:00:00Z").getUTCDay();
   const daysToFriday=(5-dow+7)%7;
@@ -431,7 +432,7 @@ export default function App(){
 
   useEffect(()=>{refreshEvents();},[refreshEvents]);
 
-  const withDist=events.map(e=>({...e,cat:e.cat||e.category,effectiveBucket:e.starts_at?computeBucket(e.starts_at):(e.time_bucket||"Upcoming")}));
+  const withDist=events.map(e=>({...e,cat:e.cat||e.category,effectiveBucket:e.starts_at?computeBucket(e.starts_at):"Upcoming"}));
 
   const toggleSave=async id=>{if(!user){setScreen("profile");return;}const was=saved.has(id);setSaved(s=>{const n=new Set(s);was?n.delete(id):n.add(id);return n;});await toggleSavedDb(user.id,id,was).catch(console.error);if(was){cancelReminder(id);}else{const ev=events.find(e=>e.id===id);if(ev)scheduleReminder(ev);}};
   const toggleInt=async id=>{if(!user){setScreen("profile");return;}const was=interested.has(id);setInterested(s=>{const n=new Set(s);was?n.delete(id):n.add(id);return n;});await toggleIntDb(user.id,id,was).catch(console.error);};
