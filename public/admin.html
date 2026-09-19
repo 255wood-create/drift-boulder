@@ -352,6 +352,9 @@ msg("as","Coordinates auto-filled from a previous event at this venue",true);
 }
 }
 
+var DENVER_DAY_FMT=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Denver',year:'numeric',month:'2-digit',day:'2-digit'});
+function denverDayStr(d){return DENVER_DAY_FMT.format(d);}
+
 var allEvts={};
 function loadEvts(){
 if(!KEY)return;
@@ -361,17 +364,16 @@ return r.json();
 }).then(function(data){
 allEvts={};
 if(!data.length){document.getElementById("cnt").textContent="(0)";document.getElementById("list").innerHTML="No events";return;}
+// An event only counts as "past" once its calendar day (in Mountain Time)
+// is actually behind today's -- not the moment its listed start time
+// passes, and not based on whichever timezone happened to write its
+// starts_at (see denverUtcOffsetHours in lib/eventSearch.js for why that
+// used to disagree with the app and hide today's events early).
 var isPastEvt=function(e){
 if(!e.starts_at)return false;
-var d=new Date(e.starts_at);
-var uh=d.getUTCHours(),um=d.getUTCMinutes();
-var placeholder=um===0&&(uh===0||uh===6||uh===7);
-if(placeholder){
-var today=new Date();today.setHours(0,0,0,0);
-var eventDay=new Date(d.getFullYear(),d.getMonth(),d.getDate());
-return eventDay<today;
-}
-return d<new Date();
+var eventDay=denverDayStr(new Date(e.starts_at));
+var todayDay=denverDayStr(new Date());
+return eventDay<todayDay;
 };
 var showPast=document.getElementById("showPast").checked;
 var visible=showPast?data.slice():data.filter(function(e){return !isPastEvt(e);});
