@@ -1,8 +1,52 @@
-# go janey. — Project Handoff (Updated September 18, 2026)
+# go janey. — Project Handoff (Updated September 19, 2026)
 
 > **This supersedes all older copies.** Several stale versions exist on the MacBook and in
 > `~/Downloads/` (numbered copies from repeated downloads). Save this over
 > `~/drift-boulder/CLAUDE-CODE-HANDOFF.md` and delete the rest.
+
+## Sept 19 session — what changed, and what's next
+Lindsay reported two problems: the site's DNS host got switched away from Vercel, and today's
+events still weren't showing up. Session ended before either was fully fixed — **pick up here.**
+
+### 1. DNS — Network Solutions overwrote the Vercel records. NOT YET FIXED.
+Confirmed via a Vercel dashboard screenshot: `gojaney.com` (root) shows **"DNS Change
+Recommended"** and `www.gojaney.com` shows **"Invalid Configuration."** Network Solutions is the
+registrar and appears to have replaced the DNS records Vercel needs (likely a parking-page
+default set when Network Solutions took over as host). Only `drift-boulder-now.vercel.app` (the
+raw Vercel domain, not the custom domain) currently shows valid.
+
+**Fix — set these records at Network Solutions' DNS management for `gojaney.com`:**
+| Type | Host | Value |
+|---|---|---|
+| A | `@` (root) | `216.150.1.1` |
+| CNAME | `www` | `00598cb056b92125.vercel-dns-016.com.` |
+
+Legacy values also still work if Network Solutions rejects the above: CNAME `cname.vercel-dns.com`
+or A `76.76.21.21`. Remove whatever parking-page records Network Solutions auto-added first.
+Nobody applied this yet — it needs registrar-side access Claude Code doesn't have.
+
+**Also:** the Claude Code **Vercel MCP connector needs reauthentication.** Every Vercel API call
+this session returned `403 Forbidden — "Not authorized: ... scope 255wood-creates-projects ...
+must re-authenticate"`, even though Lindsay was logged into the Vercel dashboard in her browser
+(that's a separate grant from Claude's connector). Reconnect it under Claude.ai connector settings
+before next session, or dashboard screenshots will be needed again to check anything Vercel-side.
+
+### 2. Today's events disappearing — display fix already shipped; real cause still open
+The **display-side** fix from the Sept 18 session (see below) is confirmed live in both repos:
+`isPastEvent()` in `src/App.jsx` and the equivalent in `public/admin.html` correctly wait for the
+Denver calendar day to change before hiding an event, not just its listed time.
+
+But Lindsay is still seeing today's events missing, which points at the **UNRESOLVED bug from
+Sept 14** (see Known data issues below): `refresh-buckets.js` may be **deleting** rows from the
+database outright, not just mis-hiding them client-side. That script:
+- runs only on Lindsay's MacBook via cron (`0 6 * * *`), not deployed anywhere
+- is **gitignored** — it is not in either repo, so this session could not read or patch it
+
+**Next step:** get the current contents of `~/drift-boulder/refresh-buckets.js` from the MacBook
+(paste it into the session) so its delete condition can be rewritten to use the same
+midnight-Mountain-Time / Denver-calendar-day comparison as `denverDay()` in `src/App.jsx:61-69`,
+instead of whatever it currently uses. Until that script is patched, assume it can still delete
+future events early.
 
 ## Sept 18 session — what changed
 - **Two real sign-in bugs found and fixed, confirmed working live on Lindsay's iPhone:**
